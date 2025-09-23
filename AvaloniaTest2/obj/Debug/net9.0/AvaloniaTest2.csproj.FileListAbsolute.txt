@@ -72,3 +72,4 @@
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/obj/Debug/net9.0/AvaloniaTest2.pdb
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/obj/Debug/net9.0/AvaloniaTest2.genruntimeconfig.cache
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/obj/Debug/net9.0/ref/AvaloniaTest2.dll
+/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/obj/Debug/net9.0/AvaloniaTest2.sourcelink.json

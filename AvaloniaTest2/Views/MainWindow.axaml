@@ -26,12 +26,17 @@
 
     <!-- Selector de ordenación -->
     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,5">
-      <TextBlock Text="Ordenar por: " VerticalAlignment="Center" Margin="0,0,5,0"/>
+      <TextBlock Text="Order by: " VerticalAlignment="Center" Margin="0,0,5,0" Foreground="Black"/>
       <ComboBox Width="150"
                 ItemsSource="{Binding SortOptions}"
                 SelectedIndex="{Binding SortBy, Mode=TwoWay}" />
+      <Button Content="Refrescar" Margin="10,0,0,0"
+              Command="{Binding RefreshCommand}" 
+              Foreground="Black"
+              BorderThickness="1"
+              BorderBrush="Black"/>
     </StackPanel>
-
+    
     <!-- Lista de archivos -->
     <ListBox x:Name="FilesListBox"
              Grid.Row="2"
@@ -44,8 +49,14 @@
           <MenuItem Header="Abrir archivo"
                     Command="{Binding OpenFileCommand}"
                     CommandParameter="{Binding SelectedItem, ElementName=FilesListBox}" />
+          <MenuItem Header="Abrir carpeta"
+                    Command="{Binding OpenFolderCommand}"
+                    CommandParameter="{Binding SelectedItem, ElementName=FilesListBox}" />
           <MenuItem Header="Copiar ruta"
                     Command="{Binding CopyPathCommand}"
+                    CommandParameter="{Binding SelectedItem, ElementName=FilesListBox}" />
+          <MenuItem Header="Eliminar"
+                    Command="{Binding MoveToTrashCommand}"
                     CommandParameter="{Binding SelectedItem, ElementName=FilesListBox}" />
         </ContextMenu>
       </ListBox.ContextMenu>

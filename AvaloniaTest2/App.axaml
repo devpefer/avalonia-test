@@ -17,4 +17,29 @@
     <Application.Resources>
         <converters:BytesToMbConverter x:Key="BytesToMbConverter" />
     </Application.Resources>
+    
+    <Application.Styles>
+        <FluentTheme/>
+    
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="CaretBrush" Value="Black"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Background="Transparent">
+                                <TextPresenter x:Name="PART_TextPresenter"
+                                               Margin="0"/>
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Application.Styles>
 </Application>
