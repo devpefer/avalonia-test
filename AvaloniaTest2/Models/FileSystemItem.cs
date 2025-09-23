@@ -1,17 +1,25 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace AvaloniaTest2.Models;
 
-public class FileSystemItem
+public class FileSystemItem : INotifyPropertyChanged
 {
-    public string Name { get; set; } = string.Empty;
-    public string FullPath { get; set; } = string.Empty;
+    public string Name { get; set; } = "";
+    public string FullPath { get; set; } = "";
     public bool IsDirectory { get; set; }
-    public ObservableCollection<FileSystemItem> Children { get; set; } = new();
     public long Size { get; set; }
 
+    public ObservableCollection<FileSystemItem> Children { get; } = new();
+    public FileSystemItem? Parent { get; set; }
+    
     public string DisplaySize => Size < 0 ? "" : FormatSize(Size);
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    private void OnPropertyChanged([CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
     private static string FormatSize(long bytes)
     {
@@ -22,5 +30,11 @@ public class FileSystemItem
         if (mb < 1024) return $"{mb:F1} MB";
         double gb = mb / 1024.0;
         return $"{gb:F2} GB";
+    }
+    
+    public void AddChild(FileSystemItem child)
+    {
+        child.Parent = this;
+        Children.Add(child);
     }
 }

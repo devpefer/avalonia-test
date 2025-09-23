@@ -10,17 +10,30 @@
         <global:MainWindowViewModel/>
     </Window.DataContext>
 
-    <!-- Usamos Grid en lugar de StackPanel -->
     <Grid RowDefinitions="Auto,*" Margin="5">
-        <!-- ComboBox arriba -->
         <ComboBox Grid.Row="0"
                   ItemsSource="{Binding SortModes}"
                   SelectedItem="{Binding SelectedSort, Mode=TwoWay}"
                   Width="150" Margin="0,0,0,5"/>
 
-        <!-- ScrollViewer para TreeView -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <TreeView x:Name="Tree" ItemsSource="{Binding RootItems}">
+                <TreeView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Abrir archivo"
+                                  Command="{Binding OpenFileCommand}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
+                        <MenuItem Header="Abrir carpeta"
+                                  Command="{Binding OpenFolderCommand}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
+                        <MenuItem Header="Copiar ruta"
+                                  Command="{Binding CopyPathCommand}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
+                        <MenuItem Header="Eliminar"
+                                  Command="{Binding MoveToTrashCommand}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
+                    </ContextMenu>
+                </TreeView.ContextMenu>
                 <TreeView.DataTemplates>
                     <TreeDataTemplate DataType="models:FileSystemItem"
                                       ItemsSource="{Binding Children}">
