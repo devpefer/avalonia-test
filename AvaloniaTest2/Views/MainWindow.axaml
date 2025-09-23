@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AvaloniaTest2.ViewModels"
+        xmlns:converters="clr-namespace:AvaloniaTest2.Converters"
+        x:Class="AvaloniaTest2.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="AvaloniaTest2"
+        Width="800" Height="450"
+        Background="White">
+
+  <Window.Resources>
+    <converters:BytesToMbConverter x:Key="BytesToMbConverter"/>
+  </Window.Resources>
+
+  <Grid Margin="10">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <!-- Mensaje de carga -->
+    <TextBlock Grid.Row="0" Text="Cargando..." HorizontalAlignment="Center"
+               Foreground="Black" IsVisible="{Binding IsLoading}"/>
+
+    <!-- Selector de ordenación -->
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,5">
+      <TextBlock Text="Ordenar por: " VerticalAlignment="Center" Margin="0,0,5,0"/>
+      <ComboBox Width="150"
+                ItemsSource="{Binding SortOptions}"
+                SelectedIndex="{Binding SortBy, Mode=TwoWay}" />
+    </StackPanel>
+
+    <!-- Lista de archivos -->
+    <ListBox x:Name="FilesListBox"
+             Grid.Row="2"
+             ItemsSource="{Binding LargestFiles}"
+             Background="White"
+             Foreground="Black">
+
+      <ListBox.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="Abrir archivo"
+                    Command="{Binding OpenFileCommand}"
+                    CommandParameter="{Binding SelectedItem, ElementName=FilesListBox}" />
+          <MenuItem Header="Copiar ruta"
+                    Command="{Binding CopyPathCommand}"
+                    CommandParameter="{Binding SelectedItem, ElementName=FilesListBox}" />
+        </ContextMenu>
+      </ListBox.ContextMenu>
+
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <StackPanel Margin="5" PointerPressed="OnItemPointerPressed">
+            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+            <TextBlock Text="{Binding Size, Converter={StaticResource BytesToMbConverter}}"
+                       FontStyle="Italic"/>
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </Grid>
+</Window>
