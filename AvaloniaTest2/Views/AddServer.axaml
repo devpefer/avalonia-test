@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:AvaloniaTest2.ViewModels"
+             x:Class="AvaloniaTest2.Views.AddServer"
+             Width="400" Height="350"
+             x:DataType="viewModels:AddServerViewModel">
+    
+    <StackPanel Margin="15" Spacing="10">
+        <TextBlock Text="Nombre"/>
+        <TextBox Watermark="Nombre" Text="{Binding Name, Mode=TwoWay}" Foreground="Black"/>
+        <TextBlock Text="Host"/>
+        <TextBox Watermark="Host" Text="{Binding Host, Mode=TwoWay}" Foreground="Black"/>
+        <TextBlock Text="Puerto"/>
+        <TextBox Watermark="Puerto" Text="{Binding Port, Mode=TwoWay}" Foreground="Black"/>
+        <TextBlock Text="Descripcion"/>
+        <TextBox Watermark="Descripción" Text="{Binding Description, Mode=TwoWay}" Foreground="Black"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+            <Button Content="Cancelar" Command="{Binding CancelCommand}" Width="90"/>
+            <Button Content="Aceptar" Command="{Binding AcceptCommand}" Width="90"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
