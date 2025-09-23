@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:AvaloniaTest2.Models"
+             xmlns:viewModels="clr-namespace:AvaloniaTest2.ViewModels"
+             x:Class="AvaloniaTest2.Views.FileExplorer"
+             x:DataType="viewModels:FileExplorerViewModel">
+
+    <Grid RowDefinitions="Auto,*" Margin="5">
+        <ComboBox Grid.Row="0"
+                  ItemsSource="{Binding SortModes}"
+                  SelectedItem="{Binding SelectedSort, Mode=TwoWay}"
+                  Width="150" Margin="0,0,0,5"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <TreeView x:Name="Tree" ItemsSource="{Binding RootItems}">
+                <TreeView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Abrir archivo"
+                                  Command="{Binding OpenFileCommand}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
+                        <MenuItem Header="Abrir carpeta"
+                                  Command="{Binding OpenFolderCommand}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
+                        <MenuItem Header="Copiar ruta"
+                                  Command="{Binding CopyPathCommand}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
+                        <MenuItem Header="Eliminar"
+                                  Command="{Binding MoveToTrashCommand}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
+                    </ContextMenu>
+                </TreeView.ContextMenu>
+                <TreeView.DataTemplates>
+                    <TreeDataTemplate DataType="models:FileSystemItem"
+                                      ItemsSource="{Binding Children}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Text=" " />
+                            <TextBlock Text="{Binding DisplaySize}" Foreground="Gray"/>
+                        </StackPanel>
+                    </TreeDataTemplate>
+                </TreeView.DataTemplates>
+            </TreeView>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

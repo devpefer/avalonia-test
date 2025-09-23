@@ -24,5 +24,11 @@ build_property.EnableCodeStyleSeverity =
 [/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/FileExplorer.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/Servers.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

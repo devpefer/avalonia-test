@@ -5,6 +5,7 @@
       <map>
         <entry key="AvaloniaTest2/App.axaml" value="AvaloniaTest2/AvaloniaTest2.csproj" />
         <entry key="AvaloniaTest2/Views/MainWindow.axaml" value="AvaloniaTest2/AvaloniaTest2.csproj" />
+        <entry key="AvaloniaTest2/Views/ServersView.axaml" value="AvaloniaTest2/AvaloniaTest2.csproj" />
       </map>
     </option>
   </component>
