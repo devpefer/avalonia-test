@@ -16,7 +16,14 @@ public class FileSystemItem : INotifyPropertyChanged
     public FileSystemItem? Parent { get; set; }
     
     public string DisplaySize => Size < 0 ? "" : FormatSize(Size);
-
+    
+    private bool _isExpanded;
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set { _isExpanded = value; OnPropertyChanged(); }
+    }
+    
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
