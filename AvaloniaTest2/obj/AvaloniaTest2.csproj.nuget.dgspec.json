@@ -1,27 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/AvaloniaTest2.csproj": {}
+    "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/AvaloniaTest2.csproj": {}
   },
   "projects": {
-    "/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/AvaloniaTest2.csproj": {
+    "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/AvaloniaTest2.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/AvaloniaTest2.csproj",
+        "projectUniqueName": "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/AvaloniaTest2.csproj",
         "projectName": "AvaloniaTest2",
-        "projectPath": "/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/AvaloniaTest2.csproj",
-        "packagesPath": "/Users/devpefer/.nuget/packages/",
-        "outputPath": "/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/obj/",
+        "projectPath": "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/AvaloniaTest2.csproj",
+        "packagesPath": "/home/devpefer/.nuget/packages/",
+        "outputPath": "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/obj/",
         "projectStyle": "PackageReference",
-        "UsingMicrosoftNETSdk": false,
         "configFilePaths": [
-          "/Users/devpefer/.nuget/NuGet/NuGet.Config"
+          "/home/devpefer/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
-          "/opt/homebrew/Cellar/dotnet/9.0.6/libexec/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -39,7 +37,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -94,7 +93,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet/9.0.6/libexec/sdk/9.0.107/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/home/devpefer/.dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
