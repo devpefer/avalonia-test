@@ -60,6 +60,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         else
             AddDriveRoot("/home", "/home", null);
     }
+    
 
     private void ApplySortingToAll()
     {

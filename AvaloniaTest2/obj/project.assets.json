@@ -124,6 +124,23 @@
           }
         }
       },
+      "Avalonia.Controls.DataGrid/11.2.5": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.2.5",
+          "Avalonia.Remote.Protocol": "11.2.5"
+        },
+        "compile": {
+          "lib/net8.0/Avalonia.Controls.DataGrid.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Controls.DataGrid.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Avalonia.Desktop/11.3.6": {
         "type": "package",
         "dependencies": {
@@ -341,6 +358,26 @@
           "buildTransitive/netstandard2.1/CommunityToolkit.Mvvm.targets": {}
         }
       },
+      "FluentAvaloniaUI/2.4.0": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.2.5",
+          "Avalonia.Controls.ColorPicker": "11.2.5",
+          "Avalonia.Controls.DataGrid": "11.2.5",
+          "Avalonia.Skia": "11.2.5",
+          "MicroCom.Runtime": "0.11.0"
+        },
+        "compile": {
+          "lib/net6.0/FluentAvalonia.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/FluentAvalonia.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "HarfBuzzSharp/8.3.1.1": {
         "type": "package",
         "dependencies": {
@@ -462,6 +499,24 @@
             "assetType": "native",
             "rid": "win-x86"
           }
+        }
+      },
+      "Material.Avalonia/3.13.1": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "11.1.0"
+        },
+        "compile": {
+          "lib/net8.0/Material.Avalonia.dll": {},
+          "lib/net8.0/Material.Colors.dll": {},
+          "lib/net8.0/Material.Ripple.dll": {},
+          "lib/net8.0/Material.Styles.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/Material.Avalonia.dll": {},
+          "lib/net8.0/Material.Colors.dll": {},
+          "lib/net8.0/Material.Ripple.dll": {},
+          "lib/net8.0/Material.Styles.dll": {}
         }
       },
       "MicroCom.Runtime/0.11.0": {
@@ -823,6 +878,24 @@
         "lib/netstandard2.0/Avalonia.Controls.ColorPicker.xml"
       ]
     },
+    "Avalonia.Controls.DataGrid/11.2.5": {
+      "sha512": "XziirhxOoHhoFyfMFpS1Ka9GrewoMPTvA9nE/70OfxREwLUxiJLJwA5N7F8+C5DpRfHVZj9zZV2WdOn4tVXSag==",
+      "type": "package",
+      "path": "avalonia.controls.datagrid/11.2.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "avalonia.controls.datagrid.11.2.5.nupkg.sha512",
+        "avalonia.controls.datagrid.nuspec",
+        "lib/net6.0/Avalonia.Controls.DataGrid.dll",
+        "lib/net6.0/Avalonia.Controls.DataGrid.xml",
+        "lib/net8.0/Avalonia.Controls.DataGrid.dll",
+        "lib/net8.0/Avalonia.Controls.DataGrid.xml",
+        "lib/netstandard2.0/Avalonia.Controls.DataGrid.dll",
+        "lib/netstandard2.0/Avalonia.Controls.DataGrid.xml"
+      ]
+    },
     "Avalonia.Desktop/11.3.6": {
       "sha512": "+r/3tPkf2E7rxbKYYd5bRq9vdaPCvuhf+PAKFmKqdQrzjWPSP4/Dg0VDIcgPsv+A2Tq82x67ZUJGQyhiLfsMVQ==",
       "type": "package",
@@ -1059,6 +1132,27 @@
         "lib/netstandard2.1/CommunityToolkit.Mvvm.xml"
       ]
     },
+    "FluentAvaloniaUI/2.4.0": {
+      "sha512": "KWpXexfCgDcVNanzzR+QXQKk300Xd9rImAZkMIrCG3TdKZ+s9sdMW3JfvKJWpzS74Y3JSZkY67Ngeh5nbtEtEw==",
+      "type": "package",
+      "path": "fluentavaloniaui/2.4.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "FAIcon.png",
+        "fluentavaloniaui.2.4.0.nupkg.sha512",
+        "fluentavaloniaui.nuspec",
+        "lib/net6.0/FluentAvalonia.dll",
+        "lib/net6.0/FluentAvalonia.pdb",
+        "lib/net6.0/FluentAvalonia.xml",
+        "lib/netstandard2.0/FluentAvalonia.dll",
+        "lib/netstandard2.0/FluentAvalonia.pdb",
+        "lib/netstandard2.0/FluentAvalonia.xml",
+        "lib/netstandard2.1/FluentAvalonia.dll",
+        "lib/netstandard2.1/FluentAvalonia.pdb",
+        "lib/netstandard2.1/FluentAvalonia.xml"
+      ]
+    },
     "HarfBuzzSharp/8.3.1.1": {
       "sha512": "tLZN66oe/uiRPTZfrCU4i8ScVGwqHNh5MHrXj0yVf4l7Mz0FhTGnQ71RGySROTmdognAs0JtluHkL41pIabWuQ==",
       "type": "package",
@@ -1215,6 +1309,27 @@
         "runtimes/win-arm64/native/libHarfBuzzSharp.dll",
         "runtimes/win-x64/native/libHarfBuzzSharp.dll",
         "runtimes/win-x86/native/libHarfBuzzSharp.dll"
+      ]
+    },
+    "Material.Avalonia/3.13.1": {
+      "sha512": "ayDK32jM6PF2GsVePEnuIoVTxIeInyK6dHj+3moK/jGno9ebJm4IgR+VgYd5uvp1Jfr9Azee9bmJSQZYOgjcbg==",
+      "type": "package",
+      "path": "material.avalonia/3.13.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "FavIcon.png",
+        "README.md",
+        "lib/net8.0/Material.Avalonia.dll",
+        "lib/net8.0/Material.Colors.dll",
+        "lib/net8.0/Material.Ripple.dll",
+        "lib/net8.0/Material.Styles.dll",
+        "lib/netstandard2.0/Material.Avalonia.dll",
+        "lib/netstandard2.0/Material.Colors.dll",
+        "lib/netstandard2.0/Material.Ripple.dll",
+        "lib/netstandard2.0/Material.Styles.dll",
+        "material.avalonia.3.13.1.nupkg.sha512",
+        "material.avalonia.nuspec"
       ]
     },
     "MicroCom.Runtime/0.11.0": {
@@ -1460,7 +1575,9 @@
       "Avalonia.Diagnostics >= 11.3.6",
       "Avalonia.Fonts.Inter >= 11.3.6",
       "Avalonia.Themes.Fluent >= 11.3.6",
-      "CommunityToolkit.Mvvm >= 8.2.1"
+      "CommunityToolkit.Mvvm >= 8.2.1",
+      "FluentAvaloniaUI >= 2.4.0",
+      "Material.Avalonia >= 3.13.1"
     ]
   },
   "packageFolders": {
@@ -1529,6 +1646,14 @@
           "CommunityToolkit.Mvvm": {
             "target": "Package",
             "version": "[8.2.1, )"
+          },
+          "FluentAvaloniaUI": {
+            "target": "Package",
+            "version": "[2.4.0, )"
+          },
+          "Material.Avalonia": {
+            "target": "Package",
+            "version": "[3.13.1, )"
           }
         },
         "imports": [

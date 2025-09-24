@@ -10,6 +10,8 @@
                   ItemsSource="{Binding SortModes}"
                   SelectedItem="{Binding SelectedSort, Mode=TwoWay}"
                   Width="150" Margin="0,0,0,5"/>
+        
+        
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <TreeView x:Name="Tree" ItemsSource="{Binding RootItems}">
                 <TreeView.ContextMenu>

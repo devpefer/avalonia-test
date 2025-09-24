@@ -19,7 +19,7 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBlock Text="{Binding Name}"/>
-                        <TextBlock Text="{Binding Address}" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Host}" Foreground="Gray"/>
                         <TextBlock Text="{Binding IsOnline, Converter={StaticResource BoolToStatusConverter}}"/>
                         <!-- <Button Content="Eliminar" Command="{Binding RemoveServerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/> -->
                     </StackPanel>

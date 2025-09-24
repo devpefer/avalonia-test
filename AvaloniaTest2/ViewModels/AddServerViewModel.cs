@@ -28,7 +28,7 @@ public class AddServerViewModel
         _window.Close(new Models.ServerItem
         {
             Name = Name ?? "",
-            Address = Host ?? "",
+            Host = Host ?? "",
             Port = Port ?? "",
             Description = Description ?? ""
         });

@@ -13,7 +13,9 @@
           "Avalonia.Diagnostics": "11.3.6",
           "Avalonia.Fonts.Inter": "11.3.6",
           "Avalonia.Themes.Fluent": "11.3.6",
-          "CommunityToolkit.Mvvm": "8.2.1"
+          "CommunityToolkit.Mvvm": "8.2.1",
+          "FluentAvaloniaUI": "2.4.0",
+          "Material.Avalonia": "3.13.1"
         },
         "runtime": {
           "AvaloniaTest2.dll": {}
@@ -101,6 +103,18 @@
           "lib/net8.0/Avalonia.Controls.ColorPicker.dll": {
             "assemblyVersion": "11.3.6.0",
             "fileVersion": "11.3.6.0"
+          }
+        }
+      },
+      "Avalonia.Controls.DataGrid/11.2.5": {
+        "dependencies": {
+          "Avalonia": "11.3.6",
+          "Avalonia.Remote.Protocol": "11.3.6"
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Controls.DataGrid.dll": {
+            "assemblyVersion": "11.2.5.0",
+            "fileVersion": "11.2.5.0"
           }
         }
       },
@@ -257,6 +271,21 @@
           }
         }
       },
+      "FluentAvaloniaUI/2.4.0": {
+        "dependencies": {
+          "Avalonia": "11.3.6",
+          "Avalonia.Controls.ColorPicker": "11.3.6",
+          "Avalonia.Controls.DataGrid": "11.2.5",
+          "Avalonia.Skia": "11.3.6",
+          "MicroCom.Runtime": "0.11.0"
+        },
+        "runtime": {
+          "lib/net6.0/FluentAvalonia.dll": {
+            "assemblyVersion": "2.4.0.0",
+            "fileVersion": "2.4.0.0"
+          }
+        }
+      },
       "HarfBuzzSharp/8.3.1.1": {
         "dependencies": {
           "HarfBuzzSharp.NativeAssets.Win32": "8.3.1.1",
@@ -354,6 +383,29 @@
             "rid": "win-x86",
             "assetType": "native",
             "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Material.Avalonia/3.13.1": {
+        "dependencies": {
+          "Avalonia": "11.3.6"
+        },
+        "runtime": {
+          "lib/net8.0/Material.Avalonia.dll": {
+            "assemblyVersion": "3.13.1.0",
+            "fileVersion": "3.13.1.0"
+          },
+          "lib/net8.0/Material.Colors.dll": {
+            "assemblyVersion": "3.13.1.0",
+            "fileVersion": "3.13.1.0"
+          },
+          "lib/net8.0/Material.Ripple.dll": {
+            "assemblyVersion": "3.13.1.0",
+            "fileVersion": "3.13.1.0"
+          },
+          "lib/net8.0/Material.Styles.dll": {
+            "assemblyVersion": "3.13.1.0",
+            "fileVersion": "3.13.1.0"
           }
         }
       },
@@ -481,6 +533,13 @@
       "path": "avalonia.controls.colorpicker/11.3.6",
       "hashPath": "avalonia.controls.colorpicker.11.3.6.nupkg.sha512"
     },
+    "Avalonia.Controls.DataGrid/11.2.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XziirhxOoHhoFyfMFpS1Ka9GrewoMPTvA9nE/70OfxREwLUxiJLJwA5N7F8+C5DpRfHVZj9zZV2WdOn4tVXSag==",
+      "path": "avalonia.controls.datagrid/11.2.5",
+      "hashPath": "avalonia.controls.datagrid.11.2.5.nupkg.sha512"
+    },
     "Avalonia.Desktop/11.3.6": {
       "type": "package",
       "serviceable": true,
@@ -565,6 +624,13 @@
       "path": "communitytoolkit.mvvm/8.2.1",
       "hashPath": "communitytoolkit.mvvm.8.2.1.nupkg.sha512"
     },
+    "FluentAvaloniaUI/2.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KWpXexfCgDcVNanzzR+QXQKk300Xd9rImAZkMIrCG3TdKZ+s9sdMW3JfvKJWpzS74Y3JSZkY67Ngeh5nbtEtEw==",
+      "path": "fluentavaloniaui/2.4.0",
+      "hashPath": "fluentavaloniaui.2.4.0.nupkg.sha512"
+    },
     "HarfBuzzSharp/8.3.1.1": {
       "type": "package",
       "serviceable": true,
@@ -599,6 +665,13 @@
       "sha512": "sha512-UsJtQsfAJoFDZrXc4hCUfRPMqccfKZ0iumJ/upcUjz/cmsTgVFGNEL5yaJWmkqsuFYdMWbj/En5/kS4PFl9hBA==",
       "path": "harfbuzzsharp.nativeassets.win32/8.3.1.1",
       "hashPath": "harfbuzzsharp.nativeassets.win32.8.3.1.1.nupkg.sha512"
+    },
+    "Material.Avalonia/3.13.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ayDK32jM6PF2GsVePEnuIoVTxIeInyK6dHj+3moK/jGno9ebJm4IgR+VgYd5uvp1Jfr9Azee9bmJSQZYOgjcbg==",
+      "path": "material.avalonia/3.13.1",
+      "hashPath": "material.avalonia.3.13.1.nupkg.sha512"
     },
     "MicroCom.Runtime/0.11.0": {
       "type": "package",

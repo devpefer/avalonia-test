@@ -1,7 +1,10 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Net.NetworkInformation;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using AvaloniaTest2.Models;
 using CommunityToolkit.Mvvm.Input;
@@ -14,10 +17,25 @@ public class ServersViewModel
     public ICommand AddServerCommand { get; }
     public ICommand RemoveServerCommand { get; }
 
+    private CancellationTokenSource? _pingCts;
+    private int _pingIntervalMinutes = 10; // Por defecto 1 minuto
+
+    public int PingIntervalMinutes
+    {
+        get => _pingIntervalMinutes;
+        set
+        {
+            if (value <= 0) return;
+            _pingIntervalMinutes = value;
+            RestartPingLoop();
+        }
+    }
+
     public ServersViewModel()
     {
         AddServerCommand = new AsyncRelayCommand(AddServerAsync);
         RemoveServerCommand = new RelayCommand<ServerItem>(RemoveServer);
+        StartPingLoop();
     }
 
     private async Task AddServerAsync()
@@ -38,4 +56,63 @@ public class ServersViewModel
     {
         if (server != null) Servers.Remove(server);
     }
+
+    private void StartPingLoop()
+    {
+        _pingCts = new CancellationTokenSource();
+        _ = PingLoopAsync(_pingCts.Token);
+    }
+
+    private void RestartPingLoop()
+    {
+        _pingCts?.Cancel();
+        StartPingLoop();
+    }
+
+    private async Task PingLoopAsync(CancellationToken token)
+    {
+        while (!token.IsCancellationRequested)
+        {
+            foreach (var server in Servers)
+            {
+                server.Status = "Pinging...";
+                try
+                {
+                    // using var ping = new Ping();
+                    // var reply = await ping.SendPingAsync(server.Host, 2000);
+                    // server.IsOnline = reply.Status == IPStatus.Success;
+                    server.IsOnline = await PingHostAsync(server.Host);
+                }
+                catch (Exception ex)
+                {
+                    server.Status = "Error";
+                }
+            }
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(PingIntervalMinutes), token);
+            }
+            catch (TaskCanceledException)
+            {
+                break;
+            }
+        }
+    }
+    
+    private async Task<bool> PingHostAsync(string host, int port = 80, int timeout = 2000)
+    {
+        try
+        {
+            using var client = new System.Net.Sockets.TcpClient();
+            var task = client.ConnectAsync(host, port);
+            var result = await Task.WhenAny(task, Task.Delay(timeout));
+            return result == task && client.Connected;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 }
