@@ -12,7 +12,7 @@ public class FileSystemItem : INotifyPropertyChanged
     public bool IsDirectory { get; set; }
     public long Size { get; set; }
 
-    public ObservableCollection<FileSystemItem> Children { get; } = new();
+    public ObservableCollection<FileSystemItem> Children { get; set;  } = new();
     public FileSystemItem? Parent { get; set; }
     
     public string DisplaySize => Size < 0 ? "" : FormatSize(Size);

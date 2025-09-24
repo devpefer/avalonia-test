@@ -24,6 +24,7 @@ namespace AvaloniaTest2.ViewModels;
 public class FileExplorerViewModel : INotifyPropertyChanged
 {
     IMessengerService _messengerService;
+    private HashSet<string> _visitedPaths = new(StringComparer.OrdinalIgnoreCase);
     public event Action<FileSystemItem>? ItemSelectedRequested;
     private FileSystemItem? _selectedItem;
     public FileSystemItem? SelectedItem
@@ -185,84 +186,185 @@ public class FileExplorerViewModel : INotifyPropertyChanged
     }
 
     public async Task LoadChildren(FileSystemItem parent)
-    {
-        if (!parent.IsDirectory) return;
-        if (parent.Children.Count == 1 && parent.Children[0].Name == "Cargando...")
-            parent.Children.Clear();
-        
-        if (!parent.IsDirectory) return;
-        parent.Children.Clear();
+{
+    if (!parent.IsDirectory) return;
 
+    parent.Children.Clear();
+
+    try
+    {
+        // Lanza cálculo recursivo de todos los subdirectorios y archivos
+        await Task.Run(() => StartCalculatingSizesRecursively(parent));
+    }
+    catch
+    {
+        // Ignorar errores de acceso
+    }
+}
+    
+    private void StartCalculatingSizesRecursively(FileSystemItem parent)
+{
+    if (!parent.IsDirectory) return;
+
+    // Evitar procesar el mismo path dos veces (previene bucles)
+    if (!_visitedPaths.Add(parent.FullPath)) return;
+
+    // Archivos del directorio actual
+    foreach (var file in Directory.GetFiles(parent.FullPath))
+    {
         try
         {
-            var dirs = Directory.GetDirectories(parent.FullPath)
-                .Select(d => new DirectoryInfo(d))
-                .Select(di => new FileSystemItem
-                {
-                    Name = di.Name,
-                    FullPath = di.FullName,
-                    IsDirectory = true,
-                    Size = -1,
-                    Parent = parent
-                }).ToList();
+            var fi = new FileInfo(file);
+            if ((fi.Attributes & FileAttributes.ReparsePoint) != 0) continue;
 
-            var files = Directory.GetFiles(parent.FullPath)
-                .Select(f => new FileInfo(f))
-                .Select(fi => new FileSystemItem
-                {
-                    Name = fi.Name,
-                    FullPath = fi.FullName,
-                    IsDirectory = false,
-                    Size = fi.Length,
-                    Parent = parent
-                }).ToList();
-
-            var children = dirs.Concat(files).ToList();
-            children = SelectedSort switch
+            var childFile = new FileSystemItem
             {
-                SortMode.SizeDesc => children.OrderByDescending(c => c.Size > 0 ? c.Size : 0).ToList(),
-                _ => children.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase).ToList()
+                Name = fi.Name,
+                FullPath = fi.FullName,
+                IsDirectory = false,
+                Size = fi.Length,
+                Parent = parent
             };
 
-            foreach (var child in children)
-            {
-                if (child.IsDirectory)
-                    child.Children.Add(new FileSystemItem { Name = "Cargando...", Size = -1 });
-
-                parent.Children.Add(child);
-
-                if (child.IsDirectory)
-                {
-                    Interlocked.Increment(ref _pendingSizeTasks);
-                    IsCalculatingSizes = true;
-
-                    _ = Task.Run(async () =>
-                    {
-                        //CurrentItemBeingProcessed = child.FullPath; // <--- Aquí actualizas la UI
-                        long size = await GetDirectorySizeSafeAsync(new DirectoryInfo(child.FullPath));
-                        child.Size = size;
-
-                        await Dispatcher.UIThread.InvokeAsync(() =>
-                            parent.Size = parent.Children.Sum(c => c.Size > 0 ? c.Size : 0)
-                        );
-
-                        if (Interlocked.Decrement(ref _pendingSizeTasks) == 0)
-                        {
-                            ApplySortingToAll();
-                            IsCalculatingSizes = false;
-                            CurrentItemBeingProcessed = null;
-                            SizesCalculationCompleted?.Invoke();
-                        }
-                    });
-                }
-            }
-
-            parent.Size = parent.Children.Sum(c => c.Size > 0 ? c.Size : 0);
+            Dispatcher.UIThread.Post(() => parent.Children.Add(childFile));
+            Dispatcher.UIThread.Post(() => parent.Size += childFile.Size);
         }
-        catch
-        {
-        }
+        catch { }
     }
+
+    // Subdirectorios
+    foreach (var dir in Directory.GetDirectories(parent.FullPath))
+    {
+        try
+        {
+            var di = new DirectoryInfo(dir);
+            if ((di.Attributes & FileAttributes.ReparsePoint) != 0) continue; // ignorar enlaces simbólicos
+
+            var childDir = new FileSystemItem
+            {
+                Name = di.Name,
+                FullPath = di.FullName,
+                IsDirectory = true,
+                Size = 0,
+                Parent = parent
+            };
+
+            Dispatcher.UIThread.Post(() => parent.Children.Add(childDir));
+
+            Interlocked.Increment(ref _pendingSizeTasks);
+            IsCalculatingSizes = true;
+
+            _ = Task.Run(async () =>
+            {
+                long size = await GetDirectorySizeSafeAsync(di);
+                childDir.Size = size;
+                await UpdateParentSizesAsync(childDir);
+
+                if (Interlocked.Decrement(ref _pendingSizeTasks) == 0)
+                {
+                    ApplySortingToAll();
+                    IsCalculatingSizes = false;
+                    CurrentItemBeingProcessed = null;
+                    SizesCalculationCompleted?.Invoke();
+                }
+            });
+
+            // Recurse automáticamente aunque el nodo no esté expandido
+            StartCalculatingSizesRecursively(childDir);
+        }
+        catch { }
+    }
+}
+
+// Recorre todos los subdirectorios aunque no estén expandidos
+private void StartCalculatingSizesRecursivelyOLD(FileSystemItem parent)
+{
+    if (!parent.IsDirectory) return;
+
+    // Archivos del directorio actual
+    foreach (var file in Directory.GetFiles(parent.FullPath))
+    {
+        try
+        {
+            var fi = new FileInfo(file);
+            var childFile = new FileSystemItem
+            {
+                Name = fi.Name,
+                FullPath = fi.FullName,
+                IsDirectory = false,
+                Size = fi.Length,
+                Parent = parent
+            };
+
+            Dispatcher.UIThread.Post(() => parent.Children.Add(childFile));
+
+            // Actualizar tamaño del padre en la UI
+            Dispatcher.UIThread.Post(() => parent.Size += childFile.Size);
+        }
+        catch { }
+    }
+
+    // Subdirectorios
+    foreach (var dir in Directory.GetDirectories(parent.FullPath))
+    {
+        try
+        {
+            var di = new DirectoryInfo(dir);
+            var childDir = new FileSystemItem
+            {
+                Name = di.Name,
+                FullPath = di.FullName,
+                IsDirectory = true,
+                Size = 0,
+                Parent = parent
+            };
+
+            Dispatcher.UIThread.Post(() => parent.Children.Add(childDir));
+
+            Interlocked.Increment(ref _pendingSizeTasks);
+            IsCalculatingSizes = true;
+
+            // Calcular tamaño del subdirectorio de forma asíncrona
+            _ = Task.Run(async () =>
+            {
+                long size = await GetDirectorySizeSafeAsync(di);
+                childDir.Size = size;
+
+                // Actualizar tamaño acumulado recursivamente hacia los padres
+                await UpdateParentSizesAsync(childDir);
+
+                if (Interlocked.Decrement(ref _pendingSizeTasks) == 0)
+                {
+                    ApplySortingToAll();
+                    IsCalculatingSizes = false;
+                    CurrentItemBeingProcessed = null;
+                    SizesCalculationCompleted?.Invoke();
+                }
+            });
+
+            // Recurse automáticamente aunque el nodo no esté expandido
+            StartCalculatingSizesRecursively(childDir);
+        }
+        catch { }
+    }
+}
+
+// Propaga el tamaño de un hijo hacia arriba hasta la raíz
+private async Task UpdateParentSizesAsync(FileSystemItem item)
+{
+    var parent = item.Parent;
+    if (parent == null) return;
+
+    await Dispatcher.UIThread.InvokeAsync(() =>
+    {
+        parent.Size = parent.Children.Sum(c => c.Size > 0 ? c.Size : 0);
+    });
+
+    // Recursivamente hacia arriba
+    if (parent.Parent != null)
+        await UpdateParentSizesAsync(parent);
+}
+
 
     private async Task<long> GetDirectorySizeSafeAsync(DirectoryInfo dir, Action<string>? onProgress = null,
         int timeoutMsPerDir = 2000)
@@ -541,6 +643,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             }
         }
     }
+
 
     private async void Search(string fileName)
     {
