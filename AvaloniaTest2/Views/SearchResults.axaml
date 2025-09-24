@@ -1,0 +1,12 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AvaloniaTest2.Views.SearchResultsWindow"
+        Width="500" Height="400"
+        Title="Resultados de búsqueda">
+    <StackPanel Margin="10">
+        <TextBlock Text="Archivos encontrados:" FontWeight="Bold" Margin="0,0,0,10"/>
+        <ListBox Items="{Binding Results}" SelectedItem="{Binding SelectedResult}" />
+        <Button Content="Cerrar" HorizontalAlignment="Right" Margin="0,10,0,0"
+                Command="{Binding CloseCommand}" />
+    </StackPanel>
+</Window>
