@@ -16,16 +16,16 @@
             <TreeView x:Name="Tree" ItemsSource="{Binding RootItems}">
                 <TreeView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Abrir archivo"
+                        <MenuItem Header="Abrir"
                                   Command="{Binding OpenFileCommand}"
                                   CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
-                        <MenuItem Header="Abrir carpeta"
+                        <MenuItem Header="Abrir carpeta contenedora"
                                   Command="{Binding OpenFolderCommand}"
                                   CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
                         <MenuItem Header="Copiar ruta"
                                   Command="{Binding CopyPathCommand}"
                                   CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
-                        <MenuItem Header="Eliminar"
+                        <MenuItem Header="Mover a la papelera"
                                   Command="{Binding MoveToTrashCommand}"
                                   CommandParameter="{Binding SelectedItem, ElementName=Tree}" />
                     </ContextMenu>
