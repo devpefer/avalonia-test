@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia;
@@ -17,11 +18,46 @@ using Avalonia.Threading;
 using AvaloniaTest2.Enums;
 using AvaloniaTest2.Helpers;
 using AvaloniaTest2.Models;
+using FluentAvalonia.UI.Data;
+using Microsoft.VisualBasic;
 
 namespace AvaloniaTest2.ViewModels;
 
 public class FileExplorerViewModel : INotifyPropertyChanged
 {
+    public ICollectionView RootItemsView { get; private set; }
+    private string? _currentItemBeingProcessed;
+
+    public string? CurrentItemBeingProcessed
+    {
+        get => _currentItemBeingProcessed;
+        set
+        {
+            if (_currentItemBeingProcessed != value)
+            {
+                _currentItemBeingProcessed = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private int _pendingSizeTasks = 0;
+    private bool _isCalculatingSizes;
+
+    public bool IsCalculatingSizes
+    {
+        get => _isCalculatingSizes;
+        set
+        {
+            if (_isCalculatingSizes != value)
+            {
+                _isCalculatingSizes = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public event Action? SizesCalculationCompleted;
     public ICommand OpenFileCommand { get; }
     public ICommand OpenFolderCommand { get; }
     public ICommand CopyPathCommand { get; }
@@ -58,27 +94,41 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 AddDriveRoot(drive.Name, drive.RootDirectory.FullName, drive);
         }
         else
-            AddDriveRoot("/home", "/home", null);
+            AddDriveRoot("/", "/", null);
     }
-    
+
 
     private void ApplySortingToAll()
     {
-        var sortedRoot = SelectedSort switch
+        foreach (var root in RootItems)
+            SortChildrenInPlace(root, SelectedSort);
+    }
+    
+    private void SortChildrenInPlace(FileSystemItem parent, SortMode sortMode)
+    {
+        if (!parent.Children.Any()) return;
+
+        var sorted = sortMode switch
         {
-            SortMode.SizeDesc => RootItems.OrderByDescending(r => r.Size).ToList(),
-            _ => RootItems.OrderBy(r => r.Name, StringComparer.OrdinalIgnoreCase).ToList()
+            SortMode.SizeDesc => parent.Children.OrderByDescending(c => c.Size > 0 ? c.Size : 0).ToList(),
+            _ => parent.Children.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase).ToList()
         };
 
-        RootItems.Clear();
-        foreach (var root in sortedRoot)
+        for (int i = 0; i < sorted.Count; i++)
         {
-            RootItems.Add(root);
-            root.SortRecursively(SelectedSort);
+            int currentIndex = parent.Children.IndexOf(sorted[i]);
+            if (currentIndex != i)
+                parent.Children.Move(currentIndex, i);
         }
+
+        // Recursivamente para subdirectorios
+        foreach (var child in parent.Children.Where(c => c.IsDirectory))
+            SortChildrenInPlace(child, sortMode);
     }
 
-    private void AddDriveRoot(string name, string fullPath, DriveInfo? drive)
+
+
+    private async Task AddDriveRoot(string name, string fullPath, DriveInfo? drive)
     {
         long size = -1;
         try
@@ -100,49 +150,71 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         RootItems.Add(item);
     }
 
-    public void LoadChildren(FileSystemItem parent)
+    public async void LoadChildren(FileSystemItem parent)
     {
         if (!parent.IsDirectory) return;
         parent.Children.Clear();
 
         try
         {
-            var dirs = Directory.GetDirectories(parent.FullPath).Select(d =>
-            {
-                var info = new DirectoryInfo(d);
-                return new FileSystemItem
+            var dirs = Directory.GetDirectories(parent.FullPath)
+                .Select(d => new DirectoryInfo(d))
+                .Select(di => new FileSystemItem
                 {
-                    Name = info.Name,
-                    FullPath = d,
+                    Name = di.Name,
+                    FullPath = di.FullName,
                     IsDirectory = true,
-                    Size = GetDirectorySizeSafe(info)
-                };
-            });
+                    Size = -1
+                }).ToList();
 
-            var files = Directory.GetFiles(parent.FullPath).Select(f =>
-            {
-                var fi = new FileInfo(f);
-                return new FileSystemItem
+            var files = Directory.GetFiles(parent.FullPath)
+                .Select(f => new FileInfo(f))
+                .Select(fi => new FileSystemItem
                 {
                     Name = fi.Name,
-                    FullPath = f,
+                    FullPath = fi.FullName,
                     IsDirectory = false,
                     Size = fi.Length
-                };
-            });
+                }).ToList();
 
-            var children = dirs.Concat(files);
+            var children = dirs.Concat(files).ToList();
             children = SelectedSort switch
             {
-                SortMode.SizeDesc => children.OrderByDescending(c => c.Size),
-                _ => children.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
+                SortMode.SizeDesc => children.OrderByDescending(c => c.Size > 0 ? c.Size : 0).ToList(),
+                _ => children.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase).ToList()
             };
 
             foreach (var child in children)
             {
                 if (child.IsDirectory)
                     child.Children.Add(new FileSystemItem { Name = "Cargando...", Size = -1 });
+
                 parent.Children.Add(child);
+
+                if (child.IsDirectory)
+                {
+                    Interlocked.Increment(ref _pendingSizeTasks);
+                    IsCalculatingSizes = true;
+
+                    _ = Task.Run(async () =>
+                    {
+                        //CurrentItemBeingProcessed = child.FullPath; // <--- Aquí actualizas la UI
+                        long size = await GetDirectorySizeSafeAsync(new DirectoryInfo(child.FullPath));
+                        child.Size = size;
+
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                            parent.Size = parent.Children.Sum(c => c.Size > 0 ? c.Size : 0)
+                        );
+
+                        if (Interlocked.Decrement(ref _pendingSizeTasks) == 0)
+                        {
+                            ApplySortingToAll();
+                            IsCalculatingSizes = false;
+                            CurrentItemBeingProcessed = null;
+                            SizesCalculationCompleted?.Invoke();
+                        }
+                    });
+                }
             }
 
             parent.Size = parent.Children.Sum(c => c.Size > 0 ? c.Size : 0);
@@ -151,6 +223,67 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         {
         }
     }
+
+    private async Task<long> GetDirectorySizeSafeAsync(DirectoryInfo dir, Action<string>? onProgress = null, int timeoutMsPerDir = 2000)
+{
+    return await Task.Run(async () =>
+    {
+        long size = 0;
+
+        try
+        {
+            // Archivos
+            foreach (var f in dir.GetFiles())
+            {
+                try
+                {
+                    if ((f.Attributes & FileAttributes.ReparsePoint) != 0 || (f.Attributes & FileAttributes.Device) != 0)
+                        continue; // saltar enlaces y dispositivos
+
+                    onProgress?.Invoke(f.FullName);
+                    CurrentItemBeingProcessed = f.FullName;
+                    // lectura de longitud con timeout
+                    var task = Task.Run(() => f.Length);
+                    if (await Task.WhenAny(task, Task.Delay(timeoutMsPerDir)) == task)
+                        size += task.Result; // si terminó antes del timeout
+                    // si timeout, se ignora
+                }
+                catch
+                {
+                    // ignorar errores de acceso
+                }
+            }
+
+            // Subdirectorios
+            foreach (var sub in dir.GetDirectories())
+            {
+                try
+                {
+                    if ((sub.Attributes & FileAttributes.ReparsePoint) != 0 || (sub.Attributes & FileAttributes.Device) != 0)
+                        continue; // saltar enlaces y dispositivos
+
+                    onProgress?.Invoke(sub.FullName);
+
+                    var task = GetDirectorySizeSafeAsync(sub, onProgress, timeoutMsPerDir);
+                    if (await Task.WhenAny(task, Task.Delay(timeoutMsPerDir)) == task)
+                        size += task.Result; // si terminó antes del timeout
+                    // si timeout, se ignora
+                }
+                catch
+                {
+                    // ignorar errores de acceso
+                }
+            }
+        }
+        catch
+        {
+            // ignorar acceso denegado u otros errores
+        }
+
+        return size;
+    });
+}
+
 
     private long GetDirectorySizeSafe(DirectoryInfo dir)
     {
@@ -249,7 +382,8 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             : null;
         if (mainWindow == null) return;
 
-        bool confirm = await ShowConfirmationDialog(mainWindow, $"¿Deseas enviar el fichero a la papelera?\n{item.Name}");
+        bool confirm =
+            await ShowConfirmationDialog(mainWindow, $"¿Deseas enviar el fichero a la papelera?\n{item.Name}");
         if (!confirm) return;
 
         try
@@ -316,7 +450,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
         return false;
     }
-    
+
     private void RemoveItemRecursive(FileSystemItem parent, FileSystemItem item)
     {
         if (parent.Children.Contains(item))
@@ -488,7 +622,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         await dialog.ShowDialog(parent);
         await tcs.Task;
     }
-    
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged([CallerMemberName] string? name = null) =>
