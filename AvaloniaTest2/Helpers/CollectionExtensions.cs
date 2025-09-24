@@ -10,7 +10,7 @@ public static class CollectionExtensions
     public static void SortBy(this ObservableCollection<FileSystemItem> collection, SortMode mode)
     {
         var sorted = mode == SortMode.SizeDesc
-            ? collection.OrderByDescending(x => x.Size).ToList()
+            ? collection.OrderByDescending(x => x.LogicalSize).ToList()
             : collection.OrderBy(x => x.Name).ToList();
 
         collection.Clear();

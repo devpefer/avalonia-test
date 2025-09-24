@@ -14,6 +14,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using AvaloniaTest2.Enums;
+using AvaloniaTest2.Helpers;
 using AvaloniaTest2.Interfaces;
 using AvaloniaTest2.Models;
 using AvaloniaTest2.Views;
@@ -147,7 +148,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
         var sorted = sortMode switch
         {
-            SortMode.SizeDesc => parent.Children.OrderByDescending(c => c.Size > 0 ? c.Size : 0).ToList(),
+            SortMode.SizeDesc => parent.Children.OrderByDescending(c => c.LogicalSize > 0 ? c.LogicalSize : 0).ToList(),
             _ => parent.Children.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase).ToList()
         };
 
@@ -179,9 +180,10 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             Name = name,
             FullPath = fullPath,
             IsDirectory = true,
-            Size = size
+            LogicalSize = size,
+            PhysicalSize = FileSizeHelper.GetPhysicalSize(fullPath),
         };
-        item.Children.Add(new FileSystemItem { Name = "Cargando...", Size = -1 });
+        item.Children.Add(new FileSystemItem { Name = "Cargando...", LogicalSize = -1 });
         RootItems.Add(item);
     }
 
@@ -227,13 +229,14 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 Name = fi.Name,
                 FullPath = fi.FullName,
                 IsDirectory = false,
-                Size = fi.Length,
+                LogicalSize = fi.Length,
+                PhysicalSize = FileSizeHelper.GetPhysicalSize(fi.FullName),
                 Parent = parent
             };
 
             Dispatcher.UIThread.Post(() => {
                 parent.Children.Add(childFile);
-                parent.Size += childFile.Size;
+                parent.LogicalSize += childFile.LogicalSize;
             });
         }
         catch { /* ignorar errores de lectura individual */ }
@@ -252,7 +255,8 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 Name = di.Name,
                 FullPath = di.FullName,
                 IsDirectory = true,
-                Size = 0,
+                LogicalSize = 0,
+                PhysicalSize = 0,
                 Parent = parent
             };
 
@@ -264,7 +268,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             _ = Task.Run(async () =>
             {
                 long size = await GetDirectorySizeSafeAsync(di);
-                childDir.Size = size;
+                childDir.LogicalSize = size;
                 await UpdateParentSizesAsync(childDir);
 
                 if (Interlocked.Decrement(ref _pendingSizeTasks) == 0)
@@ -304,12 +308,13 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 Name = fi.Name,
                 FullPath = fi.FullName,
                 IsDirectory = false,
-                Size = fi.Length,
+                LogicalSize = fi.Length,
+                PhysicalSize = FileSizeHelper.GetPhysicalSize(fi.FullName),
                 Parent = parent
             };
 
             Dispatcher.UIThread.Post(() => parent.Children.Add(childFile));
-            Dispatcher.UIThread.Post(() => parent.Size += childFile.Size);
+            Dispatcher.UIThread.Post(() => parent.LogicalSize += childFile.LogicalSize);
         }
         catch { }
     }
@@ -327,7 +332,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 Name = di.Name,
                 FullPath = di.FullName,
                 IsDirectory = true,
-                Size = 0,
+                LogicalSize = 0,
                 Parent = parent
             };
 
@@ -339,7 +344,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             _ = Task.Run(async () =>
             {
                 long size = await GetDirectorySizeSafeAsync(di);
-                childDir.Size = size;
+                childDir.LogicalSize = size;
                 await UpdateParentSizesAsync(childDir);
 
                 if (Interlocked.Decrement(ref _pendingSizeTasks) == 0)
@@ -374,14 +379,15 @@ private void StartCalculatingSizesRecursivelyOLD(FileSystemItem parent)
                 Name = fi.Name,
                 FullPath = fi.FullName,
                 IsDirectory = false,
-                Size = fi.Length,
+                LogicalSize = fi.Length,
+                PhysicalSize = FileSizeHelper.GetPhysicalSize(fi.FullName),
                 Parent = parent
             };
 
             Dispatcher.UIThread.Post(() => parent.Children.Add(childFile));
 
             // Actualizar tamaño del padre en la UI
-            Dispatcher.UIThread.Post(() => parent.Size += childFile.Size);
+            Dispatcher.UIThread.Post(() => parent.LogicalSize += childFile.LogicalSize);
         }
         catch { }
     }
@@ -397,7 +403,7 @@ private void StartCalculatingSizesRecursivelyOLD(FileSystemItem parent)
                 Name = di.Name,
                 FullPath = di.FullName,
                 IsDirectory = true,
-                Size = 0,
+                LogicalSize = 0,
                 Parent = parent
             };
 
@@ -410,7 +416,7 @@ private void StartCalculatingSizesRecursivelyOLD(FileSystemItem parent)
             _ = Task.Run(async () =>
             {
                 long size = await GetDirectorySizeSafeAsync(di);
-                childDir.Size = size;
+                childDir.LogicalSize = size;
 
                 // Actualizar tamaño acumulado recursivamente hacia los padres
                 await UpdateParentSizesAsync(childDir);
@@ -439,7 +445,7 @@ private async Task UpdateParentSizesAsync(FileSystemItem item)
 
     await Dispatcher.UIThread.InvokeAsync(() =>
     {
-        parent.Size = parent.Children.Sum(c => c.Size > 0 ? c.Size : 0);
+        parent.LogicalSize = parent.Children.Sum(c => c.LogicalSize > 0 ? c.LogicalSize : 0);
     });
 
     // Recursivamente hacia arriba

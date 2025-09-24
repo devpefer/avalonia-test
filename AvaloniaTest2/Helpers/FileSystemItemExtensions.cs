@@ -13,7 +13,7 @@ public static class FileSystemItemExtensions
 
         var sorted = mode switch
         {
-            SortMode.SizeDesc => item.Children.OrderByDescending(c => c.Size).ToList(),
+            SortMode.SizeDesc => item.Children.OrderByDescending(c => c.LogicalSize).ToList(),
             _ => item.Children.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase).ToList()
         };
 
