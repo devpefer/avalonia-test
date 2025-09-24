@@ -20,6 +20,7 @@ using AvaloniaTest2.Helpers;
 using AvaloniaTest2.Models;
 using FluentAvalonia.UI.Data;
 using Microsoft.VisualBasic;
+using DriveInfo = System.IO.DriveInfo;
 
 namespace AvaloniaTest2.ViewModels;
 
@@ -63,6 +64,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
     public ICommand CopyPathCommand { get; }
     public ICommand MoveToTrashCommand { get; }
     public ObservableCollection<FileSystemItem> RootItems { get; } = new();
+    public ObservableCollection<DriveInfo> Drives { get; } = new();
 
     public Array SortModes => Enum.GetValues(typeof(SortMode));
 
@@ -84,6 +86,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
     public FileExplorerViewModel()
     {
+        GetDriveTotalSize();
         OpenFileCommand = new RelayCommand<FileSystemItem>(OpenFile);
         OpenFolderCommand = new RelayCommand<FileSystemItem>(OpenFolder);
         CopyPathCommand = new RelayCommand<FileSystemItem>(CopyPath);
@@ -621,6 +624,35 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
         await dialog.ShowDialog(parent);
         await tcs.Task;
+    }
+
+    private void GetDriveTotalSize()
+    {
+        foreach (var drive in DriveInfo.GetDrives())
+        {
+            try
+            {
+                if (!drive.IsReady) continue;
+                Drives.Add(drive);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"No se pudo acceder a {drive.Name}: {ex.Message}");
+            }
+        }
+    }
+    
+    private string FormatSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
