@@ -33,5 +33,8 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/SearchResults.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/Servers.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

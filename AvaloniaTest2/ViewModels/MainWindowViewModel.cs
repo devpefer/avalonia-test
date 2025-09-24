@@ -3,12 +3,13 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using AvaloniaTest2;
+using AvaloniaTest2.Services;
 using AvaloniaTest2.ViewModels;
 
 public class MainWindowViewModel : INotifyPropertyChanged
 {
-    public FileExplorerViewModel FileExplorerVM { get; } = new();
-    public ServersViewModel ServersVM { get; } = new();
+    public FileExplorerViewModel FileExplorerVm { get; } = new(new MessengerService());
+    public ServersViewModel ServersVm { get; } = new();
 
     public ObservableCollection<string> MenuItems { get; } = new()
     {
@@ -17,6 +18,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
     };
 
     private string _selectedMenuItem = "Explorador de Archivos";
+
     public string SelectedMenuItem
     {
         get => _selectedMenuItem;
@@ -32,6 +34,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
     }
 
     private object _selectedView;
+
     public object SelectedView
     {
         get => _selectedView;
@@ -44,10 +47,15 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
     // Control de visibilidad del menú
     private bool _menuVisible = true;
+
     public bool MenuVisible
     {
         get => _menuVisible;
-        set { _menuVisible = value; OnPropertyChanged(); }
+        set
+        {
+            _menuVisible = value;
+            OnPropertyChanged();
+        }
     }
 
     public ICommand ToggleMenuCommand { get; }
@@ -62,13 +70,14 @@ public class MainWindowViewModel : INotifyPropertyChanged
     {
         SelectedView = _selectedMenuItem switch
         {
-            "Explorador de Archivos" => FileExplorerVM,
-            "Servidores" => ServersVM,
+            "Explorador de Archivos" => FileExplorerVm,
+            "Servidores" => ServersVm,
             _ => null
         };
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
     private void OnPropertyChanged([CallerMemberName] string? name = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

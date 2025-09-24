@@ -4,6 +4,7 @@
              xmlns:viewModels="clr-namespace:AvaloniaTest2.ViewModels"
              xmlns:converters="clr-namespace:AvaloniaTest2.Converters"
              xmlns:io="clr-namespace:System.IO;assembly=System.IO.FileSystem.DriveInfo"
+             xmlns:behaviors="clr-namespace:AvaloniaTest2.Behaviors"
              x:Class="AvaloniaTest2.Views.FileExplorer"
              x:DataType="viewModels:FileExplorerViewModel">
 
@@ -67,15 +68,11 @@
                 <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="5" Margin="5">
                     <TextBox Width="200" Watermark="Buscar..."
                              Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" />
-                    <Button Content="Buscar" Command="{Binding SearchCommand}" />
-                    <Button Content="Anterior" Command="{Binding PrevResultCommand}" />
-                    <Button Content="Siguiente" Command="{Binding NextResultCommand}" />
-                    <Button Content="Cancelar" Command="{Binding CancelSearchCommand}" />
-                    <TextBlock Text="{Binding SearchStatus}" Foreground="Gray" VerticalAlignment="Center"/>
+                    <Button Content="Buscar" Command="{Binding SearchCommand}" CommandParameter="{Binding SearchQuery}" />
                 </StackPanel>
 
                 <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                    <TreeView x:Name="Tree" ItemsSource="{Binding RootItems}">
+                    <TreeView x:Name="Tree" ItemsSource="{Binding RootItems}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
                         <TreeView.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="Abrir"

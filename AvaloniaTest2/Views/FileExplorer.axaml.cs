@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using AvaloniaTest2.Models;
+using AvaloniaTest2.Services;
 using AvaloniaTest2.ViewModels;
 
 namespace AvaloniaTest2.Views;
@@ -10,8 +11,15 @@ public partial class FileExplorer : UserControl
     public FileExplorer()
     {
         InitializeComponent();
-        DataContext = new FileExplorerViewModel();
+        DataContext = new FileExplorerViewModel(new MessengerService());
         Tree.AddHandler(TreeViewItem.ExpandedEvent, TreeViewItem_Expanded, RoutingStrategies.Bubble);
+        Tree.SelectionChanged += (s, e) =>
+        {
+            if (DataContext is FileExplorerViewModel vm)
+            {
+                vm.SelectedItem = Tree.SelectedItem as FileSystemItem;
+            }
+        };
     }
     
     private void TreeViewItem_Expanded(object? sender, RoutedEventArgs e)
@@ -24,4 +32,5 @@ public partial class FileExplorer : UserControl
             }
         }
     }
+    
 }

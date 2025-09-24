@@ -10,38 +10,36 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Threading;
 using AvaloniaTest2.Enums;
-using AvaloniaTest2.Helpers;
+using AvaloniaTest2.Interfaces;
 using AvaloniaTest2.Models;
-using FluentAvalonia.UI.Data;
-using Microsoft.VisualBasic;
+using AvaloniaTest2.Views;
 using DriveInfo = System.IO.DriveInfo;
 
 namespace AvaloniaTest2.ViewModels;
 
 public class FileExplorerViewModel : INotifyPropertyChanged
 {
-    private CancellationTokenSource? _searchCancellationTokenSource;
-
-    public CancellationTokenSource? SearchCancellationTokenSource
+    IMessengerService _messengerService;
+    public event Action<FileSystemItem>? ItemSelectedRequested;
+    private FileSystemItem? _selectedItem;
+    public FileSystemItem? SelectedItem
     {
-        get => _searchCancellationTokenSource;
+        get => _selectedItem;
         set
         {
-            if (_searchCancellationTokenSource != value)
+            if (_selectedItem != value)
             {
-                _searchCancellationTokenSource = value;
+                _selectedItem = value;
                 OnPropertyChanged();
-                (CancelSearchCommand as RelayCommand<FileSystemItem>)?.RaiseCanExecuteChanged();
             }
         }
     }
+
+    
 
     private string _searchQuery;
 
@@ -58,15 +56,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         }
     }
 
-    private readonly List<FileSystemItem> _searchResults = new();
-    private int _currentResultIndex = -1;
 
-    public string SearchStatus =>
-        _searchResults.Count == 0
-            ? "No hay resultados"
-            : $"{_currentResultIndex + 1} de {_searchResults.Count}";
-
-    public ICollectionView RootItemsView { get; private set; }
     private string? _currentItemBeingProcessed;
 
     public string? CurrentItemBeingProcessed
@@ -104,9 +94,6 @@ public class FileExplorerViewModel : INotifyPropertyChanged
     public ICommand CopyPathCommand { get; }
     public ICommand MoveToTrashCommand { get; }
     public ICommand SearchCommand { get; }
-    public ICommand NextResultCommand { get; }
-    public ICommand PrevResultCommand { get; }
-    public ICommand CancelSearchCommand { get; }
     public ObservableCollection<FileSystemItem> RootItems { get; } = new();
     public ObservableCollection<DriveInfo> Drives { get; } = new();
 
@@ -127,19 +114,16 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             }
         }
     }
-
-    public FileExplorerViewModel()
+    
+    public FileExplorerViewModel(IMessengerService messengerService)
     {
+        _messengerService = messengerService;
         GetDriveTotalSize();
         OpenFileCommand = new RelayCommand<FileSystemItem>(OpenFile);
         OpenFolderCommand = new RelayCommand<FileSystemItem>(OpenFolder);
         CopyPathCommand = new RelayCommand<FileSystemItem>(CopyPath);
         MoveToTrashCommand = new RelayCommand<FileSystemItem>(DeleteFileFromList);
-        SearchCommand = new RelayCommand<FileSystemItem>(_ => PerformSearch());
-        NextResultCommand = new RelayCommand<FileSystemItem>(_ => NavigateResult(1), _ => _searchResults.Count > 1);
-        PrevResultCommand = new RelayCommand<FileSystemItem>(_ => NavigateResult(-1), _ => _searchResults.Count > 1);
-        CancelSearchCommand =
-            new RelayCommand<FileSystemItem>(_ => CancelSearch(), _ => CancelSearchCanExecute());
+        SearchCommand = new RelayCommand<string>(Search);
         if (OperatingSystem.IsWindows())
         {
             foreach (var drive in DriveInfo.GetDrives())
@@ -200,8 +184,12 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         RootItems.Add(item);
     }
 
-    public async void LoadChildren(FileSystemItem parent)
+    public async Task LoadChildren(FileSystemItem parent)
     {
+        if (!parent.IsDirectory) return;
+        if (parent.Children.Count == 1 && parent.Children[0].Name == "Cargando...")
+            parent.Children.Clear();
+        
         if (!parent.IsDirectory) return;
         parent.Children.Clear();
 
@@ -214,7 +202,8 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                     Name = di.Name,
                     FullPath = di.FullName,
                     IsDirectory = true,
-                    Size = -1
+                    Size = -1,
+                    Parent = parent
                 }).ToList();
 
             var files = Directory.GetFiles(parent.FullPath)
@@ -224,7 +213,8 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                     Name = fi.Name,
                     FullPath = fi.FullName,
                     IsDirectory = false,
-                    Size = fi.Length
+                    Size = fi.Length,
+                    Parent = parent
                 }).ToList();
 
             var children = dirs.Concat(files).ToList();
@@ -436,7 +426,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         if (mainWindow == null) return;
 
         bool confirm =
-            await ShowConfirmationDialog(mainWindow, $"¿Deseas enviar el fichero a la papelera?\n{item.Name}");
+            await _messengerService.ShowConfirmationDialog(mainWindow, $"¿Deseas enviar el fichero a la papelera?\n{item.Name}");
         if (!confirm) return;
 
         try
@@ -446,16 +436,16 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             {
                 DeleteItemFromRootItems(item);
 
-                await ShowMessageDialog(mainWindow, $"Fichero {item.Name} enviado a la papelera correctamente.");
+                await _messengerService.ShowMessageDialog(mainWindow, $"Fichero {item.Name} enviado a la papelera correctamente.");
             }
             else
             {
-                await ShowMessageDialog(mainWindow, $"No se pudo enviar el fichero {item.Name} a la papelera.");
+                await _messengerService.ShowMessageDialog(mainWindow, $"No se pudo enviar el fichero {item.Name} a la papelera.");
             }
         }
         catch (Exception ex)
         {
-            await ShowMessageDialog(mainWindow, $"Error al mover a la papelera:\n{ex.Message}");
+            await _messengerService.ShowMessageDialog(mainWindow, $"Error al mover a la papelera:\n{ex.Message}");
         }
     }
 
@@ -536,146 +526,6 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         }
     }
 
-
-    private async Task<bool> ShowConfirmationDialog(Window parent, string message)
-    {
-        var tcs = new TaskCompletionSource<bool>();
-
-        var yesButton = new Button { Content = "Sí", Width = 80 };
-        var noButton = new Button { Content = "No", Width = 80, Margin = new Thickness(10, 0, 0, 0) };
-
-        var dialog = new Window
-        {
-            Title = "Confirmar eliminación",
-            Width = 400,
-            Height = 150,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new StackPanel
-            {
-                Margin = new Thickness(10),
-                Children =
-                {
-                    new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
-                    new StackPanel
-                    {
-                        Orientation = Orientation.Horizontal,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                        Margin = new Thickness(0, 10, 0, 0),
-                        Children =
-                        {
-                            yesButton,
-                            noButton
-                        }
-                    }
-                }
-            }
-        };
-
-        yesButton.Click += (_, _) =>
-        {
-            tcs.SetResult(true);
-            dialog.Close();
-        };
-        noButton.Click += (_, _) =>
-        {
-            tcs.SetResult(false);
-            dialog.Close();
-        };
-
-        await dialog.ShowDialog(parent);
-        return await tcs.Task;
-    }
-
-
-    private async Task<string?> ShowPasswordDialog(Window parent, string message)
-    {
-        var tcs = new TaskCompletionSource<string?>();
-
-        string? password = null;
-        var passwordBox = new TextBox { Watermark = "Contraseña", PasswordChar = '●' };
-        var okButton = new Button { Content = "Aceptar", Width = 80 };
-        var cancelButton = new Button { Content = "Cancelar", Width = 80, Margin = new Thickness(10, 0, 0, 0) };
-
-        var dialog = new Window
-        {
-            Title = "Contraseña requerida",
-            Width = 400,
-            Height = 180,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new StackPanel
-            {
-                Margin = new Thickness(10),
-                Children =
-                {
-                    new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
-                    passwordBox,
-                    new StackPanel
-                    {
-                        Orientation = Orientation.Horizontal,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        Margin = new Thickness(0, 10, 0, 0),
-                        Children = { okButton, cancelButton }
-                    }
-                }
-            }
-        };
-
-        okButton.Click += (_, _) =>
-        {
-            password = passwordBox.Text;
-            tcs.SetResult(password);
-            dialog.Close();
-        };
-        cancelButton.Click += (_, _) =>
-        {
-            tcs.SetResult(null);
-            dialog.Close();
-        };
-
-        await dialog.ShowDialog(parent);
-        return await tcs.Task;
-    }
-
-    private async Task ShowMessageDialog(Window parent, string message)
-    {
-        var tcs = new TaskCompletionSource<bool>();
-
-        var closeButton = new Button
-        {
-            Content = "Cerrar", HorizontalAlignment = HorizontalAlignment.Center,
-            Margin = new Thickness(0, 10, 0, 0)
-        };
-
-        var dialog = new Window
-        {
-            Title = "Información",
-            Width = 400,
-            Height = 150,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new StackPanel
-            {
-                Margin = new Thickness(10),
-                Children =
-                {
-                    new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
-                    closeButton
-                }
-            }
-        };
-
-        closeButton.Click += (_, _) =>
-        {
-            tcs.SetResult(true);
-            dialog.Close();
-        };
-
-        await dialog.ShowDialog(parent);
-        await tcs.Task;
-    }
-
     private void GetDriveTotalSize()
     {
         foreach (var drive in DriveInfo.GetDrives())
@@ -692,305 +542,10 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         }
     }
 
-    private string FormatSize(long bytes)
+    private async void Search(string fileName)
     {
-        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-        double len = bytes;
-        int order = 0;
-        while (len >= 1024 && order < sizes.Length - 1)
-        {
-            order++;
-            len /= 1024;
-        }
-
-        return $"{len:0.##} {sizes[order]}";
-    }
-
-    private void PerformSearch()
-    {
-        // Cancelar búsqueda previa si existe
-        SearchCancellationTokenSource?.Cancel();
-        SearchCancellationTokenSource = new CancellationTokenSource();
-        var token = SearchCancellationTokenSource.Token;
-
-        _searchResults.Clear();
-        _currentResultIndex = -1;
-
-        if (string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            OnPropertyChanged(nameof(SearchStatus));
-            return;
-        }
-
-        foreach (var root in RootItems)
-        {
-            _ = Task.Run(() => SearchRecursiveAsync(root.FullPath, SearchQuery, root, token));
-        }
-    }
-
-
-    private async Task SearchRecursiveAsync(string path, string query, FileSystemItem parentItem,
-        CancellationToken token)
-    {
-        try
-        {
-            foreach (var file in Directory.GetFiles(path))
-            {
-                if (token.IsCancellationRequested) return; // <--- cancelar
-
-                if (Path.GetFileName(file).Contains(query, StringComparison.OrdinalIgnoreCase))
-                {
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
-                    {
-                        var item = await FindOrCreateItemForSearchAsync(file, parentItem);
-                        _searchResults.Add(item);
-
-                        if (_currentResultIndex == -1)
-                        {
-                            _currentResultIndex = 0;
-                            SelectItem(item);
-                        }
-
-                        OnPropertyChanged(nameof(SearchStatus));
-                    });
-                }
-            }
-
-            foreach (var dir in Directory.GetDirectories(path))
-            {
-                if (token.IsCancellationRequested) return; // <--- cancelar
-
-                FileSystemItem dirItem = null;
-                await Dispatcher.UIThread.InvokeAsync(async () =>
-                {
-                    dirItem = await FindOrCreateItemForSearchAsync(dir, parentItem);
-
-                    if (Path.GetFileName(dir).Contains(query, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _searchResults.Add(dirItem);
-
-                        if (_currentResultIndex == -1)
-                        {
-                            _currentResultIndex = 0;
-                            SelectItem(dirItem);
-                        }
-
-                        OnPropertyChanged(nameof(SearchStatus));
-                    }
-                });
-
-                _ = SearchRecursiveAsync(dir, query, dirItem!, token);
-            }
-        }
-        catch
-        {
-            // ignorar errores de acceso
-        }
-    }
-
-    private async Task<FileSystemItem> FindOrCreateItemForSearchAsync(string fullPath, FileSystemItem root)
-    {
-        // Solo buscamos los nodos existentes, no agregamos hijos
-        FileSystemItem? current = root;
-
-        var segments = fullPath.Substring(root.FullPath.Length).TrimStart(Path.DirectorySeparatorChar)
-            .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-            .Where(s => !string.IsNullOrEmpty(s));
-
-        foreach (var segment in segments)
-        {
-            var child = current.Children.FirstOrDefault(c => c.Name.Equals(segment, StringComparison.OrdinalIgnoreCase));
-            if (child != null)
-            {
-                current = child;
-            }
-            else
-            {
-                // Si no existe, creamos un nodo temporal (solo para selección) sin tocar el árbol real
-                current = new FileSystemItem
-                {
-                    Name = segment,
-                    FullPath = Path.Combine(current.FullPath, segment),
-                    IsDirectory = true
-                };
-            }
-        }
-
-        return current;
-    }
-
-
-    private async Task<FileSystemItem> FindOrCreateItemAsync(string fullPath, FileSystemItem parent, bool isDirectory)
-    {
-        // Buscar hijo existente
-        var existing = parent.Children.FirstOrDefault(c =>
-            c.FullPath.Equals(fullPath, StringComparison.OrdinalIgnoreCase));
-        if (existing != null)
-            return existing;
-
-        // Si no existe, crearlo
-        var item = new FileSystemItem
-        {
-            Name = Path.GetFileName(fullPath),
-            FullPath = fullPath,
-            IsDirectory = isDirectory,
-            Parent = parent
-        };
-
-        if (isDirectory)
-            item.Children.Add(new FileSystemItem { Name = "Cargando...", Size = -1 });
-
-        parent.Children.Add(item);
-        return item;
-    }
-
-
-    private void NavigateResult(int direction)
-    {
-        if (_searchResults.Count == 0) return;
-
-        _currentResultIndex = (_currentResultIndex + direction + _searchResults.Count) % _searchResults.Count;
-        SelectItem(_searchResults[_currentResultIndex]);
-        OnPropertyChanged(nameof(SearchStatus));
-    }
-
-    private void SelectItem(FileSystemItem item)
-    {
-        // Expande todos los padres para asegurarte de que sea visible en el TreeView.
-        ExpandParents(item);
-
-
-        // Actualiza la selección del TreeView (suponiendo que tienes un SelectedItem enlazado).
-        // Si no lo tienes, podrías exponer un evento o propiedad SelectedItem.
-    }
-
-    private void ExpandParents(FileSystemItem item)
-    {
-        if (item.Parent != null)
-        {
-            item.Parent.IsExpanded = true;
-            ExpandParents(item.Parent);
-        }
-    }
-
-    private async Task SearchFileSystemAsync(string query)
-    {
-        _searchResults.Clear();
-        _currentResultIndex = -1;
-
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            OnPropertyChanged(nameof(SearchStatus));
-            return;
-        }
-
-        foreach (var root in RootItems)
-        {
-            await SearchRecursiveAsync(root.FullPath, query);
-        }
-
-        if (_searchResults.Any())
-        {
-            _currentResultIndex = 0;
-            SelectItem(_searchResults[_currentResultIndex]);
-        }
-
-        OnPropertyChanged(nameof(SearchStatus));
-    }
-
-    private async Task SearchRecursiveAsync(string path, string query)
-    {
-        try
-        {
-            // Archivos
-            foreach (var file in Directory.GetFiles(path))
-            {
-                if (Path.GetFileName(file).Contains(query, StringComparison.OrdinalIgnoreCase))
-                {
-                    // Encuentra o crea FileSystemItem correspondiente
-                    var item = await FindOrCreateItemAsync(file);
-                    _searchResults.Add(item);
-                }
-            }
-
-            // Subdirectorios
-            foreach (var dir in Directory.GetDirectories(path))
-            {
-                if (Path.GetFileName(dir).Contains(query, StringComparison.OrdinalIgnoreCase))
-                {
-                    var item = await FindOrCreateItemAsync(dir, isDirectory: true);
-                    _searchResults.Add(item);
-                }
-
-                // Recurse
-                await SearchRecursiveAsync(dir, query);
-            }
-        }
-        catch
-        {
-            // Ignorar errores de acceso
-        }
-    }
-
-    private async Task<FileSystemItem> FindOrCreateItemAsync(string fullPath, bool isDirectory = false)
-    {
-        // Busca en RootItems/Children; si no existe, créalo y conecta Parent
-        var segments = fullPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-            .Where(s => !string.IsNullOrEmpty(s))
-            .ToArray();
-
-        FileSystemItem? parent = RootItems.FirstOrDefault(r =>
-            fullPath.StartsWith(r.FullPath, StringComparison.OrdinalIgnoreCase));
-
-        if (parent == null)
-        {
-            // Si no hay root adecuado, créalo
-            parent = new FileSystemItem
-            {
-                Name = Path.GetPathRoot(fullPath),
-                FullPath = Path.GetPathRoot(fullPath),
-                IsDirectory = true
-            };
-            RootItems.Add(parent);
-        }
-
-        var current = parent;
-        string accumPath = current.FullPath;
-
-        for (int i = 1; i < segments.Length; i++)
-        {
-            accumPath = Path.Combine(accumPath, segments[i]);
-            var existing = current.Children.FirstOrDefault(c =>
-                c.FullPath.Equals(accumPath, StringComparison.OrdinalIgnoreCase));
-            if (existing != null)
-            {
-                current = existing;
-            }
-            else
-            {
-                var child = new FileSystemItem
-                {
-                    Name = segments[i],
-                    FullPath = accumPath,
-                    IsDirectory = (i < segments.Length - 1) || isDirectory
-                };
-                child.Parent = current;
-                current.Children.Add(child);
-                current = child;
-            }
-        }
-
-        return current;
-    }
-
-    public void CancelSearch()
-    {
-        SearchCancellationTokenSource?.Cancel();
-    }
-    
-    public bool CancelSearchCanExecute()
-    {
-        return _searchCancellationTokenSource != null;
+        var window = new SearchResults(fileName);
+        window.Show();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
