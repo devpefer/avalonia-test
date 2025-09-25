@@ -31,7 +31,7 @@
         </StackPanel>
 
         <DockPanel Grid.Column="1">
-            <Button Content="☰" DockPanel.Dock="Top" Width="50" Command="{Binding ToggleMenuCommand}" Margin="5" HorizontalAlignment="Left"/>
+            <Button Content="☰" DockPanel.Dock="Top" Width="50" Command="{Binding ToggleMenuCommand}" Margin="5" HorizontalAlignment="Left" IsVisible="{Binding !MenuVisible}"/>
 
             <ContentControl Content="{Binding SelectedView}" />
         </DockPanel>

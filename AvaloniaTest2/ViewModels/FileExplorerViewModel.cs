@@ -181,7 +181,6 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             FullPath = fullPath,
             IsDirectory = true,
             LogicalSize = size,
-            PhysicalSize = FileSizeHelper.GetPhysicalSize(fullPath),
         };
         item.Children.Add(new FileSystemItem { Name = "Cargando...", LogicalSize = -1 });
         RootItems.Add(item);
@@ -204,7 +203,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
     }
 }
     
-    private void StartCalculatingSizesRecursively(FileSystemItem parent)
+    private async Task StartCalculatingSizesRecursively(FileSystemItem parent)
 {
     if (!parent.IsDirectory) return;
     if (!_visitedPaths.Add(parent.FullPath)) return;
@@ -230,7 +229,6 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 FullPath = fi.FullName,
                 IsDirectory = false,
                 LogicalSize = fi.Length,
-                PhysicalSize = FileSizeHelper.GetPhysicalSize(fi.FullName),
                 Parent = parent
             };
 
@@ -256,7 +254,6 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 FullPath = di.FullName,
                 IsDirectory = true,
                 LogicalSize = 0,
-                PhysicalSize = 0,
                 Parent = parent
             };
 
@@ -288,7 +285,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 }
 
     
-    private void StartCalculatingSizesRecursivelyOLDNEW(FileSystemItem parent)
+    private async Task StartCalculatingSizesRecursivelyOLDNEW(FileSystemItem parent)
 {
     if (!parent.IsDirectory) return;
 
@@ -309,7 +306,6 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 FullPath = fi.FullName,
                 IsDirectory = false,
                 LogicalSize = fi.Length,
-                PhysicalSize = FileSizeHelper.GetPhysicalSize(fi.FullName),
                 Parent = parent
             };
 
@@ -364,7 +360,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 }
 
 // Recorre todos los subdirectorios aunque no estén expandidos
-private void StartCalculatingSizesRecursivelyOLD(FileSystemItem parent)
+private async Task StartCalculatingSizesRecursivelyOLD(FileSystemItem parent)
 {
     if (!parent.IsDirectory) return;
 
@@ -380,7 +376,6 @@ private void StartCalculatingSizesRecursivelyOLD(FileSystemItem parent)
                 FullPath = fi.FullName,
                 IsDirectory = false,
                 LogicalSize = fi.Length,
-                PhysicalSize = FileSizeHelper.GetPhysicalSize(fi.FullName),
                 Parent = parent
             };
 

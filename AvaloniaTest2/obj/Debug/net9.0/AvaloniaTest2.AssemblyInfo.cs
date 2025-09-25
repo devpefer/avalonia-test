@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AvaloniaTest2")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+67522d9d2fbcf141a188d2b1f4becb858846aa6d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2370b1163fa7d379b04e5d1061e4ea26f038e7eb")]
 [assembly: System.Reflection.AssemblyProductAttribute("AvaloniaTest2")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AvaloniaTest2")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

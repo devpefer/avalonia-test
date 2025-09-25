@@ -10,17 +10,12 @@ public class FileSystemItem : INotifyPropertyChanged
     public string Name { get; set; } = "";
     public string FullPath { get; set; } = "";
     public bool IsDirectory { get; set; }
-    // Tamaño lógico (Length normal)
     public long LogicalSize { get; set; } = -1;
-
-    // Tamaño físico (en disco real)
-    public long PhysicalSize { get; set; } = -1;
-
+    
     public ObservableCollection<FileSystemItem> Children { get; set;  } = new();
     public FileSystemItem? Parent { get; set; }
     
     public string DisplayLogicalSize => LogicalSize < 0 ? "" : FormatSize(LogicalSize);
-    public string DisplayPhysicalSize => PhysicalSize < 0 ? "" : FormatSize(PhysicalSize);
     
     private bool _isExpanded;
     public bool IsExpanded

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace AvaloniaTest2.Helpers;
 
@@ -9,7 +10,12 @@ public static class FileSizeHelper
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     private static extern uint GetCompressedFileSizeW(string lpFileName, out uint lpFileSizeHigh);
 
-    public static long GetPhysicalSize(string path)
+    public static Task<long> GetPhysicalSizeAsync(string path)
+    {
+        return Task.Run(() => GetPhysicalSize(path));
+    }
+    
+    private static long GetPhysicalSize(string path)
     {
         try
         {
@@ -24,6 +30,7 @@ public static class FileSizeHelper
                     int err = Marshal.GetLastWin32Error();
                     if (err != 0) return new FileInfo(path).Length;
                 }
+
                 return size;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -61,9 +68,7 @@ public static class FileSizeHelper
         public long st_size;
         public long st_blksize;
         public long st_blocks;
-        // resto ignorado
     }
-
     [DllImport("libc", SetLastError = true, EntryPoint = "stat")]
     private static extern int stat_linux(string path, out StatLinux buf);
 
@@ -92,7 +97,6 @@ public static class FileSizeHelper
         public long st_blocks;
         public long st_blksize;
     }
-
     [DllImport("libc", SetLastError = true, EntryPoint = "stat")]
     private static extern int stat_osx(string path, out StatOSX buf);
 }

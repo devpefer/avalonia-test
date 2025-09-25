@@ -32,27 +32,27 @@
                             <TreeDataTemplate DataType="io:DriveInfo" ItemsSource="{Binding}">
                                 <Grid ColumnDefinitions="200,100,100,60,100" Margin="0,0,5,0">
                                     <!-- Nombre de la unidad -->
-                                    <TextBlock Grid.Column="0" Text="{Binding Name}" 
+                                    <TextBlock Grid.Column="0" Text="{Binding Name}"
                                                HorizontalAlignment="Left" />
 
                                     <!-- Etiqueta "Available" -->
-                                    <TextBlock Grid.Column="1" Text="Available" 
+                                    <TextBlock Grid.Column="1" Text="Available"
                                                HorizontalAlignment="Right" />
 
                                     <!-- Espacio libre -->
-                                    <TextBlock Grid.Column="2" 
-                                               Text="{Binding TotalFreeSpace, Converter={StaticResource BytesToMbConverter}}" 
-                                               Foreground="Gray" 
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding TotalFreeSpace, Converter={StaticResource BytesToMbConverter}}"
+                                               Foreground="Gray"
                                                HorizontalAlignment="Right" />
 
                                     <!-- Etiqueta "Total" -->
-                                    <TextBlock Grid.Column="3" Text="Total" 
+                                    <TextBlock Grid.Column="3" Text="Total"
                                                HorizontalAlignment="Right" />
 
                                     <!-- Tamaño total -->
-                                    <TextBlock Grid.Column="4" 
-                                               Text="{Binding TotalSize, Converter={StaticResource BytesToMbConverter}}" 
-                                               Foreground="Gray" 
+                                    <TextBlock Grid.Column="4"
+                                               Text="{Binding TotalSize, Converter={StaticResource BytesToMbConverter}}"
+                                               Foreground="Gray"
                                                HorizontalAlignment="Right" />
                                 </Grid>
                             </TreeDataTemplate>
@@ -64,7 +64,7 @@
                 <TextBlock Grid.Row="3" Text="Almacenamiento"
                            Foreground="Gray"
                            Margin="5,10,0,0" />
-                
+
                 <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="5" Margin="5">
                     <TextBox Width="200" Watermark="Buscar..."
                              Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" />
@@ -72,7 +72,8 @@
                 </StackPanel>
 
                 <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                    <TreeView x:Name="Tree" ItemsSource="{Binding RootItems}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+                    <TreeView x:Name="Tree" ItemsSource="{Binding RootItems}"
+                              SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
                         <TreeView.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="Abrir"
@@ -92,20 +93,8 @@
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:FileSystemItem" ItemsSource="{Binding Children}">
                                 <Grid ColumnDefinitions="300,100,120" Margin="2,0,0,0">
-                                    <!-- Nombre -->
                                     <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" />
-
-                                    <!-- Tamaño lógico -->
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <TextBlock Text="Logical: " Foreground="Gray" />
-                                        <TextBlock Text="{Binding DisplayLogicalSize}" />
-                                    </StackPanel>
-
-                                    <!-- Tamaño físico -->
-                                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <TextBlock Text="Physical: " Foreground="Gray" />
-                                        <TextBlock Text="{Binding DisplayPhysicalSize}" />
-                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="{Binding DisplayLogicalSize}" />
                                 </Grid>
                             </TreeDataTemplate>
                         </TreeView.DataTemplates>
