@@ -16,6 +16,8 @@ using AvaloniaTest2;
 using AvaloniaTest2.Enums;
 using AvaloniaTest2.Interfaces;
 using AvaloniaTest2.Models;
+using AvaloniaTest2.Views;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AvaloniaTest2.ViewModels;
 public class FileExplorerViewModel : INotifyPropertyChanged
@@ -27,6 +29,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         : new[] { "/proc", "/sys", "/dev", "/run", "/var/run", "/System", "/Library", "/private" };
     
     public ObservableCollection<FileSystemItem> RootItems { get; } = new();
+    public ObservableCollection<DriveInfo> Drives { get; } = new();
     public Array SortModes => Enum.GetValues(typeof(SortMode));
     private FileSystemItem? _selectedItem;
     public FileSystemItem? SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
@@ -46,11 +49,27 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             if (SetProperty(ref _selectedSort, value)) ApplySorting();
         }
     }
+    
+    private string _searchQuery;
+
+    public string SearchQuery
+    {
+        get => _searchQuery;
+        set
+        {
+            if (_searchQuery != value)
+            {
+                _searchQuery = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     public ICommand OpenFileCommand { get; }
     public ICommand OpenFolderCommand { get; }
     public ICommand CopyPathCommand { get; }
     public ICommand MoveToTrashCommand { get; }
+    public ICommand SearchCommand { get; }
     public event Action? SizesCalculationCompleted;
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -61,7 +80,9 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         OpenFolderCommand = new RelayCommand<FileSystemItem>(OpenFolder);
         CopyPathCommand = new RelayCommand<FileSystemItem>(CopyPath);
         MoveToTrashCommand = new RelayCommand<FileSystemItem>(DeleteFileFromList);
+        SearchCommand = new RelayCommand<string>(PerformSearch);
 
+        GetDriveTotalSize();
         LoadAll();
     }
 
@@ -343,12 +364,38 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 RemoveItemRecursive(root, item);
         }
     }
+    
+    private void GetDriveTotalSize()
+    {
+        foreach (var drive in DriveInfo.GetDrives())
+        {
+            try
+            {
+                if (!drive.IsReady) continue;
+                Drives.Add(drive);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"No se pudo acceder a {drive.Name}: {ex.Message}");
+            }
+        }
+    }
+    
+    private async void PerformSearch(string fileName)
+    {
+        var window = new SearchResults(fileName);
+        window.Show();
+    }
 
-    protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         return true;
     }
+    
+
+    private void OnPropertyChanged([CallerMemberName] string? name = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
