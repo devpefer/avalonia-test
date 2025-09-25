@@ -1,14 +1,8 @@
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using AvaloniaTest2.Interfaces;
-using CommunityToolkit.WinUI.Notifications;
-#if WINDOWS
-using CommunityToolkit.WinUI.Notifications;
-#endif
 
 namespace AvaloniaTest2.Services
 {
@@ -62,39 +56,6 @@ namespace AvaloniaTest2.Services
                 NotificationType.Information,
                 TimeSpan.FromSeconds(5)
             ));
-        }
-
-        /// <summary>
-        /// Notificación a nivel de sistema (si la plataforma lo soporta)
-        /// </summary>
-        public void ShowSystem(string title, string message)
-        {
-#if WINDOWS
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Construye el contenido
-                var toastContent = new ToastContentBuilder()
-                    .AddText(title)
-                    .AddText(message)
-                    .GetToastContent();
-
-                // Crea el ToastNotification
-                var toast = new ToastNotification(toastContent.GetXml());
-
-                // Muestra el toast usando DesktopNotificationManagerCompat
-                DesktopNotificationManagerCompat.CreateToastNotifier("MiAppAvalonia")
-                    .Show(toast);
-            }
-#else
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                Process.Start("notify-send", $"\"{title}\" \"{message}\"");
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                Process.Start("osascript", $"-e 'display notification \"{message}\" with title \"{title}\"'");
-            }
-#endif
         }
     }
 }

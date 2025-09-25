@@ -49,8 +49,7 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
         
         var systemNotifier = new SystemNotifier();
-        //systemNotifier.ShowInApp("Bienvenido", "App iniciada correctamente");
-        systemNotifier.ShowSystem("Bienvenido", "App iniciada correctamente");
+        systemNotifier.ShowInApp("Bienvenido", "App iniciada correctamente");
     }
 
     private void DisableAvaloniaDataAnnotationValidation()
