@@ -28,7 +28,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
     private readonly string[] _blockedPaths = OperatingSystem.IsWindows()
         ? new[] { @"C:\Windows\WinSxS", @"C:\Windows\System32\config" }
-        : new[] { "/proc", "/sys", "/dev", "/run", "/var/run", "/System", "/Library", "/private" };
+        : new[] { "/proc", "/sys", "/dev", "/run", "/var", "/var/run", "/System", "/Library", "/private" };
 
     public ObservableCollection<FileSystemItem> RootItems { get; } = new();
     public ObservableCollection<DriveInfo> Drives { get; } = new();
@@ -87,6 +87,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
     public ICommand OpenFolderCommand { get; }
     public ICommand CopyPathCommand { get; }
     public ICommand MoveToTrashCommand { get; }
+    public ICommand RecalculateCommand { get; }
     public ICommand SearchCommand { get; }
     public event Action? SizesCalculationCompleted;
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -99,6 +100,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         OpenFolderCommand = new RelayCommand<FileSystemItem>(OpenFolder);
         CopyPathCommand = new RelayCommand<FileSystemItem>(CopyPath);
         MoveToTrashCommand = new RelayCommand<FileSystemItem>(DeleteFileFromList);
+        RecalculateCommand = new RelayCommand(LoadAll);
         SearchCommand = new RelayCommand<string>(PerformSearch);
         SizesCalculationCompleted += SizeCalculationCompletedHandler;
         GetDriveTotalSize();
@@ -107,6 +109,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
     private void LoadAll()
     {
+        RootItems.Clear();
         string rootPath = OperatingSystem.IsWindows() ? "C:\\" : "/";
         var rootItem = new FileSystemItem { Name = rootPath, FullPath = rootPath, IsDirectory = true };
         RootItems.Add(rootItem);

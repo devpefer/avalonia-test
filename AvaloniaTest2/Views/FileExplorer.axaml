@@ -52,7 +52,7 @@
                            Foreground="Gray"
                            Margin="5,10,0,0" />
                 
-                <Grid Grid.Row="4" Margin="5" ColumnDefinitions="Auto,Auto,*">
+                <Grid Grid.Row="4" Margin="5" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
                     <TextBox Width="200"
                              Watermark="Buscar..."
                              Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" />
@@ -61,13 +61,18 @@
                             Content="Buscar"
                             Command="{Binding SearchCommand}"
                             CommandParameter="{Binding SearchQuery}" />
-    
+                    
                     <ComboBox Grid.Column="2"
                               ItemsSource="{Binding SortModes}"
                               SelectedItem="{Binding SelectedSort, Mode=TwoWay}"
                               Width="150"
-                              Margin="0,0,0,5"
                               HorizontalAlignment="Right"/>
+                    
+                    <Button Grid.Column="3"
+                            Content="Recalcular"
+                            Command="{Binding RecalculateCommand}"
+                            HorizontalAlignment="Right"/>
+                    
                 </Grid>
 
                 <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
