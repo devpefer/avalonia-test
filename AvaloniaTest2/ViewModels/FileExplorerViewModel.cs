@@ -463,22 +463,12 @@ private async Task UpdateParentSizesAsync(FileSystemItem item)
                 {
                     try
                     {
-                        if ((f.Attributes & FileAttributes.ReparsePoint) != 0 ||
-                            (f.Attributes & FileAttributes.Device) != 0)
-                            continue; // saltar enlaces y dispositivos
-
-                        onProgress?.Invoke(f.FullName);
+                        if ((f.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+                        long fileSize = GetFileSizeWithTimeout(f.FullName, timeoutMsPerDir);
+                        size += fileSize;
                         CurrentItemBeingProcessed = f.FullName;
-                        // lectura de longitud con timeout
-                        var task = Task.Run(() => f.Length);
-                        if (await Task.WhenAny(task, Task.Delay(timeoutMsPerDir)) == task)
-                            size += task.Result; // si terminó antes del timeout
-                        // si timeout, se ignora
                     }
-                    catch
-                    {
-                        // ignorar errores de acceso
-                    }
+                    catch { }
                 }
 
                 // Subdirectorios
@@ -727,6 +717,29 @@ private async Task UpdateParentSizesAsync(FileSystemItem item)
         }
     }
 
+    private long GetFileSizeWithTimeout(string path, int timeoutMs = 500)
+    {
+        // Ignorar ficheros de sistema problemáticos
+        var attr = File.GetAttributes(path);
+        if ((attr & FileAttributes.System) != 0) return 0;
+
+        long size = 0;
+        var thread = new Thread(() =>
+        {
+            try { size = new FileInfo(path).Length; }
+            catch { size = 0; }
+        });
+        thread.IsBackground = true;
+        thread.Start();
+
+        if (!thread.Join(timeoutMs))
+        {
+            thread.Abort(); // solo en último recurso; asegura que no bloquee más
+            size = 0;
+        }
+
+        return size;
+    }
 
     private async void Search(string fileName)
     {
