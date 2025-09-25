@@ -44,4 +44,10 @@ public class FileSystemItem : INotifyPropertyChanged
         child.Parent = this;
         Children.Add(child);
     }
+    
+    public void UpdateSize(long size)
+    {
+        LogicalSize = size;
+        OnPropertyChanged(nameof(LogicalSize));
+    }
 }
