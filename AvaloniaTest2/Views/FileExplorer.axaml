@@ -7,7 +7,7 @@
              xmlns:behaviors="clr-namespace:AvaloniaTest2.Behaviors"
              xmlns:global="clr-namespace:"
              x:Class="AvaloniaTest2.Views.FileExplorer"
-             x:DataType="global:FileExplorerViewModel">
+             x:DataType="viewModels:FileExplorerViewModel">
 
     <UserControl.Resources>
         <converters:BoolToStatusConverter x:Key="BoolToStatusConverter" />

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -16,19 +17,15 @@ using AvaloniaTest2.Enums;
 using AvaloniaTest2.Interfaces;
 using AvaloniaTest2.Models;
 
-// ... tus using y namespace permanecen iguales
-
+namespace AvaloniaTest2.ViewModels;
 public class FileExplorerViewModel : INotifyPropertyChanged
 {
     private readonly IMessengerService _messengerService;
-    private readonly HashSet<string> _visitedPaths = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly string[] _blockedPaths = OperatingSystem.IsWindows()
         ? new[] { @"C:\Windows\WinSxS", @"C:\Windows\System32\config" }
         : new[] { "/proc", "/sys", "/dev", "/run", "/var/run", "/System", "/Library", "/private" };
-
-    private CancellationToken _cancellation;
-
+    
     public ObservableCollection<FileSystemItem> RootItems { get; } = new();
     public Array SortModes => Enum.GetValues(typeof(SortMode));
     private FileSystemItem? _selectedItem;
@@ -99,7 +96,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 var childDir = new FileSystemItem { Name = Path.GetFileName(entry), FullPath = entry, IsDirectory = true, Parent = parent };
                 await Dispatcher.UIThread.InvokeAsync(() => parent.Children.Add(childDir));
 
-                await LoadRecursiveAsync(childDir); // carga hijos recursivamente
+                await LoadRecursiveAsync(childDir);
             }
             else
             {
@@ -128,19 +125,16 @@ public class FileExplorerViewModel : INotifyPropertyChanged
     {
         long total = 0;
 
-        // Primero los directorios hijos
         foreach (var childDir in dirItem.Children.Where(c => c.IsDirectory))
         {
             total += await CalculateDirectorySizeBottomUpAsync(childDir);
         }
 
-        // Luego los archivos
         foreach (var file in dirItem.Children.Where(c => !c.IsDirectory))
         {
             total += file.LogicalSize;
         }
 
-        // Actualizar tamaño en UI y ordenar hijos
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             dirItem.LogicalSize = total;
@@ -173,55 +167,183 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
         foreach (var child in parent.Children.Where(c => c.IsDirectory)) SortRecursive(child, sortMode);
     }
-
-    // ===================== COMANDOS =====================
+    
     private void OpenFile(FileSystemItem? item)
     {
-        if (item == null || item.IsDirectory) return;
-        try { Process.Start(new ProcessStartInfo(item.FullPath) { UseShellExecute = true }); }
-        catch (Exception ex) { _messengerService.ShowMessageDialog(null, $"No se pudo abrir el archivo:\n{ex.Message}"); }
-    }
-
-    private async void OpenFolder(FileSystemItem? item)
-    {
         if (item == null) return;
-        string path = item.IsDirectory ? item.FullPath : Path.GetDirectoryName(item.FullPath)!;
-        try { Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); }
-        catch (Exception ex) { await _messengerService.ShowMessageDialog(null, $"No se pudo abrir la carpeta:\n{ex.Message}"); }
-    }
 
-    private async void CopyPath(FileSystemItem item)
-    {
-        if (item == null) return;
         try
         {
-            if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                await desktop.MainWindow.Clipboard.SetTextAsync(item.FullPath);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Process.Start(new ProcessStartInfo(item.FullPath) { UseShellExecute = true });
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Process.Start(new ProcessStartInfo("xdg-open", item.FullPath) { UseShellExecute = false });
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Process.Start(new ProcessStartInfo("open", item.FullPath) { UseShellExecute = false });
+            }
         }
-        catch (Exception ex)
+        catch
         {
-            await _messengerService.ShowMessageDialog(null, $"No se pudo copiar la ruta:\n{ex.Message}");
+        }
+    }
+
+    private void OpenFolder(FileSystemItem? item)
+    {
+        if (item == null) return;
+
+        try
+        {
+            string? folderPath = Path.GetDirectoryName(item.FullPath);
+            if (string.IsNullOrEmpty(folderPath)) return;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Process.Start(new ProcessStartInfo("explorer.exe", folderPath) { UseShellExecute = true });
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Process.Start(new ProcessStartInfo("xdg-open", folderPath) { UseShellExecute = false });
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Process.Start(new ProcessStartInfo("open", folderPath) { UseShellExecute = false });
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    private async void CopyPath(FileSystemItem? item)
+    {
+        if (item == null) return;
+
+        await Dispatcher.UIThread.InvokeAsync(async () => { await CopiarAlPortapapeles(item.FullPath); });
+    }
+    
+    private async Task CopiarAlPortapapeles(string texto)
+    {
+        var window =
+            Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+
+        if (window != null)
+        {
+            var clipboard = window.Clipboard;
+            await clipboard?.SetTextAsync(texto)!;
         }
     }
 
     private async void DeleteFileFromList(FileSystemItem? item)
     {
         if (item == null) return;
+
+        var mainWindow = Avalonia.Application.Current?.ApplicationLifetime
+            is IClassicDesktopStyleApplicationLifetime desktop
+            ? desktop.MainWindow
+            : null;
+        if (mainWindow == null) return;
+
+        bool confirm = await _messengerService.ShowConfirmationDialog(mainWindow, $"¿Deseas enviar el fichero a la papelera?\n{item.Name}");
+        if (!confirm) return;
+
         try
         {
-            if (item.IsDirectory) Directory.Delete(item.FullPath, true);
-            else File.Delete(item.FullPath);
+            bool ok = MoveToTrash(item);
+            if (ok)
+            {
+                DeleteItemFromRootItems(item);
 
-            item.Parent?.Children.Remove(item);
-            RootItems.Remove(item);
+                await _messengerService.ShowMessageDialog(mainWindow, $"Fichero {item.Name} enviado a la papelera correctamente.");
+            }
+            else
+            {
+                await _messengerService.ShowMessageDialog(mainWindow, $"No se pudo enviar el fichero {item.Name} a la papelera.");
+            }
         }
         catch (Exception ex)
         {
-            await _messengerService.ShowMessageDialog(null, $"No se pudo eliminar:\n{ex.Message}");
+            await _messengerService.ShowMessageDialog(mainWindow, $"Error al mover a la papelera:\n{ex.Message}");
+        }
+    }
+    
+    private bool MoveToTrash(FileSystemItem item)
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            try
+            {
+                Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(item.FullPath,
+                    Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,
+                    Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            var psi = new ProcessStartInfo("gio", $"trash \"{item.FullPath}\"")
+            {
+                UseShellExecute = false
+            };
+            var p = Process.Start(psi);
+            p.WaitForExit();
+            return p.ExitCode == 0;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            string cmd = $"tell application \"Finder\" to delete POSIX file \"{item.FullPath}\"";
+            var psi = new ProcessStartInfo("osascript", $"-e \"{cmd}\"")
+            {
+                UseShellExecute = true
+            };
+            var p = Process.Start(psi);
+            p.WaitForExit();
+            return p.ExitCode == 0;
+        }
+
+        return false;
+    }
+    
+    private void RemoveItemRecursive(FileSystemItem parent, FileSystemItem item)
+    {
+        if (parent.Children.Contains(item))
+        {
+            parent.Children.Remove(item);
+            return;
+        }
+
+        foreach (var child in parent.Children)
+        {
+            if (child.IsDirectory)
+                RemoveItemRecursive(child, item);
+        }
+    }
+    
+    private void DeleteItemFromRootItems(FileSystemItem item)
+    {
+        if (RootItems.Contains(item))
+        {
+            RootItems.Remove(item);
+            return;
+        }
+
+        foreach (var root in RootItems)
+        {
+            if (root.IsDirectory)
+                RemoveItemRecursive(root, item);
         }
     }
 
-    // ===================== PROPERTYCHANGED =====================
     protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;

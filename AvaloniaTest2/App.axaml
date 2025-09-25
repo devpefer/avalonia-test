@@ -8,7 +8,7 @@
              RequestedThemeVariant="Default">
 
     <Application.DataTemplates>
-        <DataTemplate DataType="global:FileExplorerViewModel">
+        <DataTemplate DataType="viewModels:FileExplorerViewModel">
             <views:FileExplorer/>
         </DataTemplate>
 
