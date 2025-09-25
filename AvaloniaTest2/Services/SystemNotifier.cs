@@ -20,7 +20,7 @@ namespace AvaloniaTest2.Services
 #if WINDOWS
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (_notifyIcon == null)
+                if (_notifyIcon == null)Application.DoEvents();
                 {
                     _notifyIcon = new NotifyIcon
                     {
@@ -31,8 +31,9 @@ namespace AvaloniaTest2.Services
 
                 _notifyIcon.BalloonTipTitle = title;
                 _notifyIcon.BalloonTipText = message;
-                _notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
+                _notifyIcon.BalloonTipIcon = ToolTipIcon.Info;Application.DoEvents();
                 _notifyIcon.ShowBalloonTip(5000);
+                Application.DoEvents();
                 return;
             }
 #endif
