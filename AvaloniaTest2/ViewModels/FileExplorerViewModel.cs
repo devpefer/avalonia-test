@@ -77,6 +77,12 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         set { _selectedSort = value; OnPropertyChanged(); ApplySortingToAll(); }
     }
 
+    private readonly string[] blockedPaths = new[]
+    {
+        @"C:\Windows\WinSxS",
+        @"C:\Windows\System32\config"
+    };
+
     public FileExplorerViewModel(IMessengerService messengerService)
     {
         _messengerService = messengerService;
@@ -148,7 +154,6 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         if (!parent.IsDirectory) return;
 
         parent.Children.Clear();
-
         await Task.Run(() => StartCalculatingSizesRecursively(parent));
     }
 
@@ -162,13 +167,16 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         try { files = Directory.GetFiles(parent.FullPath); } catch { }
         try { directories = Directory.GetDirectories(parent.FullPath); } catch { }
 
-        // Archivos
         foreach (var file in files)
         {
             try
             {
+                if (blockedPaths.Any(bp => file.StartsWith(bp, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
                 var fi = new FileInfo(file);
-                if ((fi.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+                if ((fi.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) != 0)
+                    continue;
 
                 var childFile = new FileSystemItem
                 {
@@ -188,13 +196,16 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             catch { }
         }
 
-        // Directorios
         foreach (var dir in directories)
         {
             try
             {
+                if (blockedPaths.Any(bp => dir.StartsWith(bp, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
                 var di = new DirectoryInfo(dir);
-                if ((di.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+                if ((di.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device)) != 0)
+                    continue;
 
                 var childDir = new FileSystemItem
                 {
@@ -238,17 +249,15 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            parent.LogicalSize = parent.Children.Sum(c => c.LogicalSize > 0 ? c.LogicalSize : 0);
+            long newSize = parent.Children.Sum(c => c.LogicalSize > 0 ? c.LogicalSize : 0);
+            parent.LogicalSize = newSize;
         });
 
         if (parent.Parent != null)
             await UpdateParentSizesAsync(parent);
     }
 
-    private async Task<long> GetDirectorySizeSafeAsync(
-        DirectoryInfo dir,
-        int timeoutMsPerFile = 500,
-        int maxConcurrentTasks = 8)
+    private async Task<long> GetDirectorySizeSafeAsync(DirectoryInfo dir, int timeoutMsPerFile = 500, int maxConcurrentTasks = 8)
     {
         long totalSize = 0;
         var files = Array.Empty<FileInfo>();
@@ -265,8 +274,11 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             await semaphore.WaitAsync();
             try
             {
-                if ((f.Attributes & FileAttributes.ReparsePoint) != 0 ||
-                    (f.Attributes & FileAttributes.Device) != 0) return;
+                if ((f.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) != 0)
+                    return;
+
+                if (blockedPaths.Any(bp => f.FullName.StartsWith(bp, StringComparison.OrdinalIgnoreCase)))
+                    return;
 
                 CurrentItemBeingProcessed = f.FullName;
                 var t = Task.Run(() => f.Length);
@@ -283,11 +295,11 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             await semaphore.WaitAsync();
             try
             {
-                if ((sub.Attributes & FileAttributes.ReparsePoint) != 0 ||
-                    (sub.Attributes & FileAttributes.Device) != 0) return;
+                if ((sub.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device)) != 0) return;
+                if (blockedPaths.Any(bp => sub.FullName.StartsWith(bp, StringComparison.OrdinalIgnoreCase))) return;
 
                 CurrentItemBeingProcessed = sub.FullName;
-                var subSize = await GetDirectorySizeSafeAsync(sub, timeoutMsPerFile, maxConcurrentTasks);
+                long subSize = await GetDirectorySizeSafeAsync(sub, timeoutMsPerFile, maxConcurrentTasks);
                 lock (sizeLock) totalSize += subSize;
             }
             catch { }
@@ -298,6 +310,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         return totalSize;
     }
 
+    // --- Métodos UI / Files ---
     private void OpenFile(FileSystemItem? item)
     {
         if (item == null) return;
