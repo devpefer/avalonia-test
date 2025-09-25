@@ -27,6 +27,9 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/AddServer.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/AppNotification.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/FileExplorer.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 

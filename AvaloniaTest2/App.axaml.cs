@@ -6,6 +6,7 @@ using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using AvaloniaTest2.Services;
 using AvaloniaTest2.ViewModels;
 using AvaloniaTest2.Views;
 
@@ -45,6 +46,10 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+        
+        var systemNotifier = new SystemNotifier();
+        systemNotifier.Show("Bienvenido", "App iniciada correctamente");
+        AppDomain.CurrentDomain.ProcessExit += (s, e) => systemNotifier.Dispose();
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

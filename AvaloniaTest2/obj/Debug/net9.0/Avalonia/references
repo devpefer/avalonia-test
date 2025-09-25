@@ -36,6 +36,7 @@
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.VisualBasic.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.Win32.Primitives.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.Win32.Registry.dll
+/home/devpefer/.nuget/packages/microsoft.win32.systemevents/7.0.0/lib/net7.0/Microsoft.Win32.SystemEvents.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/mscorlib.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/netstandard.dll
 /home/devpefer/.nuget/packages/skiasharp/2.88.9/lib/net6.0/SkiaSharp.dll
@@ -69,6 +70,7 @@
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Diagnostics.TraceSource.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Diagnostics.Tracing.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.dll
+/home/devpefer/.nuget/packages/system.drawing.common/7.0.0/lib/net7.0/System.Drawing.Common.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Drawing.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Drawing.Primitives.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Dynamic.Runtime.dll
@@ -186,6 +188,7 @@
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Web.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Web.HttpUtility.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Windows.dll
+/home/devpefer/.nuget/packages/system.windows.forms/4.0.0/lib/System.Windows.Forms.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Xml.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Xml.Linq.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Xml.ReaderWriter.dll
