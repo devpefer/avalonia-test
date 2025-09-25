@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using AvaloniaTest2.ViewModels;
 using AvaloniaTest2.Views;
@@ -11,6 +12,8 @@ namespace AvaloniaTest2;
 
 public partial class App : Application
 {
+    private TrayIcon? _tray;
+    
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -27,6 +30,13 @@ public partial class App : Application
             {
                 DataContext = new MainWindowViewModel(),
             };
+            
+            //SetupTray(desktop);
+            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            desktop.MainWindow.Show();
+
+            var floatingPanel = new FloatingPanel();
+            floatingPanel.Show();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -43,5 +53,21 @@ public partial class App : Application
         {
             BindingPlugins.DataValidators.Remove(plugin);
         }
+    }
+    
+    private void SetupTray(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        _tray = new TrayIcon
+        {
+            Icon = new WindowIcon("Assets/appicon.png"), // reemplaza con tu icono
+            ToolTipText = "File Explorer",
+            IsVisible = true
+        };
+
+        var menu = new NativeMenu();
+        menu.Items.Add(new NativeMenuItem("Abrir"));
+        menu.Items.Add(new NativeMenuItem("Salir"));
+
+        _tray.Menu = menu;
     }
 }

@@ -79,3 +79,4 @@
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Material.Colors.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Material.Ripple.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Material.Styles.dll
+/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Assets/appicon.png
