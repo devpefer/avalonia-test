@@ -449,58 +449,75 @@ private async Task UpdateParentSizesAsync(FileSystemItem item)
 }
 
 
-    private async Task<long> GetDirectorySizeSafeAsync(DirectoryInfo dir, Action<string>? onProgress = null,
-        int timeoutMsPerDir = 2000)
+    private async Task<long> GetDirectorySizeSafeAsync(
+    DirectoryInfo dir,
+    Action<string>? onProgress = null,
+    int timeoutMsPerFile = 500,
+    int maxConcurrentTasks = 8)
+{
+    long totalSize = 0;
+
+    var files = Array.Empty<FileInfo>();
+    var subDirs = Array.Empty<DirectoryInfo>();
+
+    try { files = dir.GetFiles(); } catch { }
+    try { subDirs = dir.GetDirectories(); } catch { }
+
+    // Thread-safe sum
+    object sizeLock = new();
+
+    // Limitamos concurrencia usando SemaphoreSlim
+    using var semaphore = new SemaphoreSlim(maxConcurrentTasks);
+
+    // Tareas para archivos
+    var fileTasks = files.Select(async f =>
     {
-        return await Task.Run(async () =>
+        await semaphore.WaitAsync();
+        try
         {
-            long size = 0;
+            if ((f.Attributes & FileAttributes.ReparsePoint) != 0 ||
+                (f.Attributes & FileAttributes.Device) != 0)
+                return;
 
-            try
+            onProgress?.Invoke(f.FullName);
+            CurrentItemBeingProcessed = f.FullName;
+
+            // Calculamos tamaño con timeout
+            var t = Task.Run(() => f.Length);
+            if (await Task.WhenAny(t, Task.Delay(timeoutMsPerFile)) == t)
             {
-                // Archivos
-                foreach (var f in dir.GetFiles())
-                {
-                    try
-                    {
-                        if ((f.Attributes & FileAttributes.ReparsePoint) != 0) continue;
-                        long fileSize = GetFileSizeWithTimeout(f.FullName, timeoutMsPerDir);
-                        size += fileSize;
-                        CurrentItemBeingProcessed = f.FullName;
-                    }
-                    catch { }
-                }
-
-                // Subdirectorios
-                foreach (var sub in dir.GetDirectories())
-                {
-                    try
-                    {
-                        if ((sub.Attributes & FileAttributes.ReparsePoint) != 0 ||
-                            (sub.Attributes & FileAttributes.Device) != 0)
-                            continue; // saltar enlaces y dispositivos
-
-                        onProgress?.Invoke(sub.FullName);
-
-                        var task = GetDirectorySizeSafeAsync(sub, onProgress, timeoutMsPerDir);
-                        if (await Task.WhenAny(task, Task.Delay(timeoutMsPerDir)) == task)
-                            size += task.Result; // si terminó antes del timeout
-                        // si timeout, se ignora
-                    }
-                    catch
-                    {
-                        // ignorar errores de acceso
-                    }
-                }
+                lock (sizeLock) totalSize += t.Result;
             }
-            catch
-            {
-                // ignorar acceso denegado u otros errores
-            }
+            // else ignoramos timeout
+        }
+        catch { }
+        finally { semaphore.Release(); }
+    }).ToArray();
 
-            return size;
-        });
-    }
+    // Tareas para subdirectorios (recursivas)
+    var dirTasks = subDirs.Select(async sub =>
+    {
+        await semaphore.WaitAsync();
+        try
+        {
+            if ((sub.Attributes & FileAttributes.ReparsePoint) != 0 ||
+                (sub.Attributes & FileAttributes.Device) != 0)
+                return;
+
+            onProgress?.Invoke(sub.FullName);
+            var subSize = await GetDirectorySizeSafeAsync(sub, onProgress, timeoutMsPerFile, maxConcurrentTasks);
+            lock (sizeLock) totalSize += subSize;
+        }
+        catch { }
+        finally { semaphore.Release(); }
+    }).ToArray();
+
+    // Esperamos todas las tareas
+    await Task.WhenAll(fileTasks.Concat(dirTasks));
+
+    return totalSize;
+}
+
 
 
     private long GetDirectorySizeSafe(DirectoryInfo dir)
