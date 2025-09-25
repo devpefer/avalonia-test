@@ -20,27 +20,45 @@ using AvaloniaTest2.Views;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AvaloniaTest2.ViewModels;
+
 public class FileExplorerViewModel : INotifyPropertyChanged
 {
     private readonly IMessengerService _messengerService;
+    private readonly IInAppNotifier _inAppNotifier;
 
     private readonly string[] _blockedPaths = OperatingSystem.IsWindows()
         ? new[] { @"C:\Windows\WinSxS", @"C:\Windows\System32\config" }
         : new[] { "/proc", "/sys", "/dev", "/run", "/var/run", "/System", "/Library", "/private" };
-    
+
     public ObservableCollection<FileSystemItem> RootItems { get; } = new();
     public ObservableCollection<DriveInfo> Drives { get; } = new();
     public Array SortModes => Enum.GetValues(typeof(SortMode));
     private FileSystemItem? _selectedItem;
-    public FileSystemItem? SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
+
+    public FileSystemItem? SelectedItem
+    {
+        get => _selectedItem;
+        set => SetProperty(ref _selectedItem, value);
+    }
 
     private bool _isCalculatingSizes;
-    public bool IsCalculatingSizes { get => _isCalculatingSizes; private set => SetProperty(ref _isCalculatingSizes, value); }
+
+    public bool IsCalculatingSizes
+    {
+        get => _isCalculatingSizes;
+        private set => SetProperty(ref _isCalculatingSizes, value);
+    }
 
     private string? _currentItemBeingProcessed;
-    public string? CurrentItemBeingProcessed { get => _currentItemBeingProcessed; private set => SetProperty(ref _currentItemBeingProcessed, value); }
+
+    public string? CurrentItemBeingProcessed
+    {
+        get => _currentItemBeingProcessed;
+        private set => SetProperty(ref _currentItemBeingProcessed, value);
+    }
 
     private SortMode _selectedSort = SortMode.SizeDesc;
+
     public SortMode SelectedSort
     {
         get => _selectedSort;
@@ -49,7 +67,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             if (SetProperty(ref _selectedSort, value)) ApplySorting();
         }
     }
-    
+
     private string _searchQuery;
 
     public string SearchQuery
@@ -73,15 +91,16 @@ public class FileExplorerViewModel : INotifyPropertyChanged
     public event Action? SizesCalculationCompleted;
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public FileExplorerViewModel(IMessengerService messengerService)
+    public FileExplorerViewModel(IMessengerService messengerService, IInAppNotifier inAppNotifier)
     {
         _messengerService = messengerService;
+        _inAppNotifier = inAppNotifier;
         OpenFileCommand = new RelayCommand<FileSystemItem>(OpenFile);
         OpenFolderCommand = new RelayCommand<FileSystemItem>(OpenFolder);
         CopyPathCommand = new RelayCommand<FileSystemItem>(CopyPath);
         MoveToTrashCommand = new RelayCommand<FileSystemItem>(DeleteFileFromList);
         SearchCommand = new RelayCommand<string>(PerformSearch);
-
+        SizesCalculationCompleted += SizeCalculationCompletedHandler;
         GetDriveTotalSize();
         LoadAll();
     }
@@ -94,34 +113,55 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         _ = Task.Run(async () =>
         {
             IsCalculatingSizes = true;
-            await LoadRecursiveAsync(rootItem);
-            await CalculateDirectorySizeBottomUpAsync(rootItem);
-            await Dispatcher.UIThread.InvokeAsync(() => 
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 SizesCalculationCompleted?.Invoke();
-                CurrentItemBeingProcessed = null; // limpia el texto
+            });
+            await LoadRecursiveAsync(rootItem);
+            await CalculateDirectorySizeBottomUpAsync(rootItem);
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                CurrentItemBeingProcessed = null;
             });
             IsCalculatingSizes = false;
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                SizesCalculationCompleted?.Invoke();
+            });
         });
     }
 
     private async Task LoadRecursiveAsync(FileSystemItem parent)
     {
         IEnumerable<string> entries;
-        try { entries = Directory.EnumerateFileSystemEntries(parent.FullPath); }
-        catch { return; }
+        try
+        {
+            entries = Directory.EnumerateFileSystemEntries(parent.FullPath);
+        }
+        catch
+        {
+            return;
+        }
 
         foreach (var entry in entries)
         {
             await Dispatcher.UIThread.InvokeAsync(() => CurrentItemBeingProcessed = entry);
             bool isDir = false;
-            try { isDir = Directory.Exists(entry); } catch { continue; }
+            try
+            {
+                isDir = Directory.Exists(entry);
+            }
+            catch
+            {
+                continue;
+            }
 
             if (isDir)
             {
                 if (_blockedPaths.Any(bp => entry.StartsWith(bp, StringComparison.OrdinalIgnoreCase))) continue;
 
-                var childDir = new FileSystemItem { Name = Path.GetFileName(entry), FullPath = entry, IsDirectory = true, Parent = parent };
+                var childDir = new FileSystemItem
+                    { Name = Path.GetFileName(entry), FullPath = entry, IsDirectory = true, Parent = parent };
                 await Dispatcher.UIThread.InvokeAsync(() => parent.Children.Add(childDir));
 
                 await LoadRecursiveAsync(childDir);
@@ -129,9 +169,17 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             else
             {
                 FileInfo fi;
-                try { fi = new FileInfo(entry); } catch { continue; }
+                try
+                {
+                    fi = new FileInfo(entry);
+                }
+                catch
+                {
+                    continue;
+                }
 
-                if ((fi.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) != 0) continue;
+                if ((fi.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) !=
+                    0) continue;
 
                 var fileItem = new FileSystemItem
                 {
@@ -195,7 +243,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
         foreach (var child in parent.Children.Where(c => c.IsDirectory)) SortRecursive(child, sortMode);
     }
-    
+
     private void OpenFile(FileSystemItem? item)
     {
         if (item == null) return;
@@ -253,7 +301,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
         await Dispatcher.UIThread.InvokeAsync(async () => { await CopiarAlPortapapeles(item.FullPath); });
     }
-    
+
     private async Task CopiarAlPortapapeles(string texto)
     {
         var window =
@@ -278,7 +326,9 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             : null;
         if (mainWindow == null) return;
 
-        bool confirm = await _messengerService.ShowConfirmationDialog(mainWindow, $"¿Deseas enviar el fichero a la papelera?\n{item.Name}");
+        bool confirm =
+            await _messengerService.ShowConfirmationDialog(mainWindow,
+                $"¿Deseas enviar el fichero a la papelera?\n{item.Name}");
         if (!confirm) return;
 
         try
@@ -288,11 +338,13 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             {
                 DeleteItemFromRootItems(item);
 
-                await _messengerService.ShowMessageDialog(mainWindow, $"Fichero {item.Name} enviado a la papelera correctamente.");
+                await _messengerService.ShowMessageDialog(mainWindow,
+                    $"Fichero {item.Name} enviado a la papelera correctamente.");
             }
             else
             {
-                await _messengerService.ShowMessageDialog(mainWindow, $"No se pudo enviar el fichero {item.Name} a la papelera.");
+                await _messengerService.ShowMessageDialog(mainWindow,
+                    $"No se pudo enviar el fichero {item.Name} a la papelera.");
             }
         }
         catch (Exception ex)
@@ -300,7 +352,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             await _messengerService.ShowMessageDialog(mainWindow, $"Error al mover a la papelera:\n{ex.Message}");
         }
     }
-    
+
     private bool MoveToTrash(FileSystemItem item)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -341,7 +393,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
         return false;
     }
-    
+
     private void RemoveItemRecursive(FileSystemItem parent, FileSystemItem item)
     {
         if (parent.Children.Contains(item))
@@ -356,7 +408,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 RemoveItemRecursive(child, item);
         }
     }
-    
+
     private void DeleteItemFromRootItems(FileSystemItem item)
     {
         if (RootItems.Contains(item))
@@ -371,7 +423,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                 RemoveItemRecursive(root, item);
         }
     }
-    
+
     private void GetDriveTotalSize()
     {
         foreach (var drive in DriveInfo.GetDrives())
@@ -387,7 +439,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             }
         }
     }
-    
+
     private async void PerformSearch(string fileName)
     {
         var window = new SearchResults(fileName);
@@ -401,8 +453,20 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         return true;
     }
-    
+
 
     private void OnPropertyChanged([CallerMemberName] string? name = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+    private void SizeCalculationCompletedHandler()
+    {
+        if (IsCalculatingSizes)
+        {
+            _inAppNotifier.ShowInApp("Proceso iniciado", "El cálculo de tamaño de ficheros se ha iniciado.");
+        }
+        else
+        {
+            _inAppNotifier.ShowInApp("Proceso terminado", "El cálculo de tamaño de ficheros ha finalizado.");
+        }
+    }
 }

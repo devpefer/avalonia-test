@@ -8,8 +8,8 @@ using AvaloniaTest2.ViewModels;
 
 public class MainWindowViewModel : INotifyPropertyChanged
 {
-    public FileExplorerViewModel FileExplorerVm { get; } = new(new MessengerService());
-    public ServersViewModel ServersVm { get; } = new();
+    public FileExplorerViewModel FileExplorerVm { get; }
+    public ServersViewModel ServersVm { get; }
 
     public ObservableCollection<string> MenuItems { get; } = new()
     {
@@ -56,6 +56,11 @@ public class MainWindowViewModel : INotifyPropertyChanged
     public MainWindowViewModel()
     {
         ToggleMenuCommand = new RelayCommand<object?>(_ => MenuVisible = !MenuVisible);
+        FileExplorerVm = new FileExplorerViewModel(
+            new MessengerService(),
+            new InAppNotifier()
+        );
+        ServersVm = new ServersViewModel();
         UpdateSelectedView();
     }
 

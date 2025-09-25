@@ -6,7 +6,7 @@ using AvaloniaTest2.Interfaces;
 
 namespace AvaloniaTest2.Services
 {
-    public class SystemNotifier : ISystemNotifier
+    public class InAppNotifier() : IInAppNotifier
     {
         private WindowNotificationManager? _inAppManager;
         private WindowNotificationManager? _systemManager;

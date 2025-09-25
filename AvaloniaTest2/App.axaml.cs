@@ -29,27 +29,23 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainWindowViewModel(),
-            };
+            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            desktop.MainWindow = new MainWindow();
+            desktop.MainWindow.Show();
+            
+            var viewModel = new MainWindowViewModel();
+            desktop.MainWindow.DataContext = viewModel;
 
             if (OperatingSystem.IsWindows())
             {
                 SetupTray(desktop);
             }
 
-            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            desktop.MainWindow.Show();
-
             var floatingPanel = new FloatingPanel();
             floatingPanel.Show();
         }
 
         base.OnFrameworkInitializationCompleted();
-        
-        var systemNotifier = new SystemNotifier();
-        systemNotifier.ShowInApp("Bienvenido", "App iniciada correctamente");
     }
 
     private void DisableAvaloniaDataAnnotationValidation()
