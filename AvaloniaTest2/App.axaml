@@ -4,10 +4,11 @@
              xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
              xmlns:viewModels="clr-namespace:AvaloniaTest2.ViewModels"
              xmlns:views="clr-namespace:AvaloniaTest2.Views"
+             xmlns:global="clr-namespace:"
              RequestedThemeVariant="Default">
 
     <Application.DataTemplates>
-        <DataTemplate DataType="viewModels:FileExplorerViewModel">
+        <DataTemplate DataType="global:FileExplorerViewModel">
             <views:FileExplorer/>
         </DataTemplate>
 

@@ -5,8 +5,9 @@
              xmlns:converters="clr-namespace:AvaloniaTest2.Converters"
              xmlns:io="clr-namespace:System.IO;assembly=System.IO.FileSystem.DriveInfo"
              xmlns:behaviors="clr-namespace:AvaloniaTest2.Behaviors"
+             xmlns:global="clr-namespace:"
              x:Class="AvaloniaTest2.Views.FileExplorer"
-             x:DataType="viewModels:FileExplorerViewModel">
+             x:DataType="global:FileExplorerViewModel">
 
     <UserControl.Resources>
         <converters:BoolToStatusConverter x:Key="BoolToStatusConverter" />
@@ -23,53 +24,53 @@
                           SelectedItem="{Binding SelectedSort, Mode=TwoWay}"
                           Width="150" Margin="0,0,0,5" />
 
-                <TextBlock Grid.Row="1" Text="Unidades"
-                           Foreground="Gray"
-                           Margin="5,0,0,0" />
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                    <ListBox x:Name="Drives" ItemsSource="{Binding Drives}">
-                        <ListBox.DataTemplates>
-                            <TreeDataTemplate DataType="io:DriveInfo" ItemsSource="{Binding}">
-                                <Grid ColumnDefinitions="200,100,100,60,100" Margin="0,0,5,0">
-                                    <!-- Nombre de la unidad -->
-                                    <TextBlock Grid.Column="0" Text="{Binding Name}" 
-                                               HorizontalAlignment="Left" />
-
-                                    <!-- Etiqueta "Available" -->
-                                    <TextBlock Grid.Column="1" Text="Available" 
-                                               HorizontalAlignment="Right" />
-
-                                    <!-- Espacio libre -->
-                                    <TextBlock Grid.Column="2" 
-                                               Text="{Binding TotalFreeSpace, Converter={StaticResource BytesToMbConverter}}" 
-                                               Foreground="Gray" 
-                                               HorizontalAlignment="Right" />
-
-                                    <!-- Etiqueta "Total" -->
-                                    <TextBlock Grid.Column="3" Text="Total" 
-                                               HorizontalAlignment="Right" />
-
-                                    <!-- Tamaño total -->
-                                    <TextBlock Grid.Column="4" 
-                                               Text="{Binding TotalSize, Converter={StaticResource BytesToMbConverter}}" 
-                                               Foreground="Gray" 
-                                               HorizontalAlignment="Right" />
-                                </Grid>
-                            </TreeDataTemplate>
-
-                        </ListBox.DataTemplates>
-                    </ListBox>
-                </ScrollViewer>
+                <!-- <TextBlock Grid.Row="1" Text="Unidades" -->
+                <!--            Foreground="Gray" -->
+                <!--            Margin="5,0,0,0" /> -->
+                <!-- <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"> -->
+                <!--     <ListBox x:Name="Drives" ItemsSource="{Binding Drives}"> -->
+                <!--         <ListBox.DataTemplates> -->
+                <!--             <TreeDataTemplate DataType="io:DriveInfo" ItemsSource="{Binding}"> -->
+                <!--                 <Grid ColumnDefinitions="200,100,100,60,100" Margin="0,0,5,0"> -->
+                <!--                     ~1~ Nombre de la unidad @1@ -->
+                <!--                     <TextBlock Grid.Column="0" Text="{Binding Name}"  -->
+                <!--                                HorizontalAlignment="Left" /> -->
+                <!-- -->
+                <!--                     ~1~ Etiqueta "Available" @1@ -->
+                <!--                     <TextBlock Grid.Column="1" Text="Available"  -->
+                <!--                                HorizontalAlignment="Right" /> -->
+                <!-- -->
+                <!--                     ~1~ Espacio libre @1@ -->
+                <!--                     <TextBlock Grid.Column="2"  -->
+                <!--                                Text="{Binding TotalFreeSpace, Converter={StaticResource BytesToMbConverter}}"  -->
+                <!--                                Foreground="Gray"  -->
+                <!--                                HorizontalAlignment="Right" /> -->
+                <!-- -->
+                <!--                     ~1~ Etiqueta "Total" @1@ -->
+                <!--                     <TextBlock Grid.Column="3" Text="Total"  -->
+                <!--                                HorizontalAlignment="Right" /> -->
+                <!-- -->
+                <!--                     ~1~ Tamaño total @1@ -->
+                <!--                     <TextBlock Grid.Column="4"  -->
+                <!--                                Text="{Binding TotalSize, Converter={StaticResource BytesToMbConverter}}"  -->
+                <!--                                Foreground="Gray"  -->
+                <!--                                HorizontalAlignment="Right" /> -->
+                <!--                 </Grid> -->
+                <!--             </TreeDataTemplate> -->
+                <!-- -->
+                <!--         </ListBox.DataTemplates> -->
+                <!--     </ListBox> -->
+                <!-- </ScrollViewer> -->
 
                 <TextBlock Grid.Row="3" Text="Almacenamiento"
                            Foreground="Gray"
                            Margin="5,10,0,0" />
                 
-                <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="5" Margin="5">
-                    <TextBox Width="200" Watermark="Buscar..."
-                             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" />
-                    <Button Content="Buscar" Command="{Binding SearchCommand}" CommandParameter="{Binding SearchQuery}" />
-                </StackPanel>
+                <!-- <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="5" Margin="5"> -->
+                <!--     <TextBox Width="200" Watermark="Buscar..." -->
+                <!--              Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" /> -->
+                <!--     <Button Content="Buscar" Command="{Binding SearchCommand}" CommandParameter="{Binding SearchQuery}" /> -->
+                <!-- </StackPanel> -->
 
                 <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                     <TreeView x:Name="Tree" ItemsSource="{Binding RootItems}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}">

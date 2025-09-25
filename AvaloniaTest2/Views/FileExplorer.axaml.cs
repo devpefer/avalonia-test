@@ -12,8 +12,8 @@ public partial class FileExplorer : UserControl
     public FileExplorer()
     {
         InitializeComponent();
-        DataContext = new FileExplorerViewModel(new MessengerService());
-        Tree.AddHandler(TreeViewItem.ExpandedEvent, TreeViewItem_Expanded, RoutingStrategies.Bubble);
+        //DataContext = new FileExplorerViewModel(new MessengerService());
+        //Tree.AddHandler(TreeViewItem.ExpandedEvent, TreeViewItem_Expanded, RoutingStrategies.Bubble);
         // Tree.SelectionChanged += (s, e) =>
         // {
         //     if (DataContext is FileExplorerViewModel vm)
@@ -23,14 +23,14 @@ public partial class FileExplorer : UserControl
         // };
     }
 
-    private async Task TreeViewItem_Expanded(object? sender, RoutedEventArgs e)
-    {
-        if (e.Source is TreeViewItem item && item.DataContext is FileSystemItem fsi)
-        {
-            if (fsi.Children.Count == 1 && fsi.Children[0].Name == "Cargando...")
-            {
-                await ((FileExplorerViewModel)DataContext!).LoadChildren(fsi);
-            }
-        }
-    }
+    // private async Task TreeViewItem_Expanded(object? sender, RoutedEventArgs e)
+    // {
+    //     if (e.Source is TreeViewItem item && item.DataContext is FileSystemItem fsi)
+    //     {
+    //         if (fsi.Children.Count == 1 && fsi.Children[0].Name == "Cargando...")
+    //         {
+    //             await ((FileExplorerViewModel)DataContext!).LoadChildren(fsi);
+    //         }
+    //     }
+    // }
 }
