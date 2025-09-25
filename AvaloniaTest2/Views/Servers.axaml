@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:AvaloniaTest2.ViewModels"
+        xmlns:converters="clr-namespace:AvaloniaTest2.Converters"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="AvaloniaTest2.Views.Servers"
+        x:DataType="viewModels:ServersViewModel">
+    
+    <UserControl.Resources>
+        <converters:BoolToStatusConverter x:Key="BoolToStatusConverter"/>
+    </UserControl.Resources>
+    
+    <StackPanel Margin="10">
+        <Button Content="Añadir servidor" Command="{Binding AddServerCommand}" Width="150"/>
+        <ListBox ItemsSource="{Binding Servers}" Margin="0,10,0,0">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{Binding Name}"/>
+                        <TextBlock Text="{Binding Host}" Foreground="Gray"/>
+                        <TextBlock Text="{Binding IsOnline, Converter={StaticResource BoolToStatusConverter}}"/>
+                        <!-- <Button Content="Eliminar" Command="{Binding RemoveServerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/> -->
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </StackPanel>
+
+</UserControl>

@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:AvaloniaTest2.ViewModels"
+        x:Class="AvaloniaTest2.Views.FloatingPanel"
+        Width="200" Height="100"
+        CanResize="False"
+        Topmost="True"
+        TransparencyLevelHint="AcrylicBlur"
+        WindowStartupLocation="Manual"
+        SystemDecorations="None"
+        Background="Transparent"
+        x:DataType="viewModels:FileExplorerViewModel">
+
+    <Border Background="#CC2E2E2E" CornerRadius="10" Padding="10">
+        <StackPanel Spacing="5">
+            <Button Content="Abrir ventana principal" Click="OpenMainWindow_Click"/>
+            <Button Content="Salir" Click="ExitApp_Click"/>
+            <TextBlock Text="{Binding CurrentItemBeingProcessed}" TextWrapping="Wrap" Foreground="White"/>
+        </StackPanel>
+    </Border>
+</Window>

@@ -1,75 +1,39 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:AvaloniaTest2.ViewModels"
         xmlns:converters="clr-namespace:AvaloniaTest2.Converters"
+        xmlns:local="clr-namespace:AvaloniaTest2"
+        xmlns:global="clr-namespace:"
         x:Class="AvaloniaTest2.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="AvaloniaTest2"
-        Width="800" Height="450"
-        Background="White">
+        Width="1000" Height="600"
+        Title="SysAdmin App"
+        x:DataType="global:MainWindowViewModel">
 
-  <Window.Resources>
-    <converters:BytesToMbConverter x:Key="BytesToMbConverter"/>
-  </Window.Resources>
+    <Window.Resources>
+        <converters:BoolToGridLengthConverter x:Key="BoolToGridLengthConverter"
+                                              VisibleLength="200" HiddenLength="0" />
+    </Window.Resources>
 
-  <Grid Margin="10">
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition Height="*"/>
-    </Grid.RowDefinitions>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="{Binding MenuVisible, Converter={StaticResource BoolToGridLengthConverter}}" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-    <!-- Mensaje de carga -->
-    <TextBlock Grid.Row="0" Text="Cargando..." HorizontalAlignment="Center"
-               Foreground="Black" IsVisible="{Binding IsLoading}"/>
+        <StackPanel Background="#333" Grid.Column="0">
+            <Button Content="☰" Command="{Binding ToggleMenuCommand}" Margin="5" />
+            <ListBox ItemsSource="{Binding MenuItems}" SelectedItem="{Binding SelectedMenuItem}" Margin="5">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" Foreground="White" Margin="2" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
 
-    <!-- Selector de ordenación -->
-    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,5">
-      <TextBlock Text="Order by: " VerticalAlignment="Center" Margin="0,0,5,0" Foreground="Black"/>
-      <ComboBox Width="150"
-                ItemsSource="{Binding SortOptions}"
-                SelectedIndex="{Binding SortBy, Mode=TwoWay}" />
-      <Button Content="Refrescar" Margin="10,0,0,0"
-              Command="{Binding RefreshCommand}" 
-              Foreground="Black"
-              BorderThickness="1"
-              BorderBrush="Black"/>
-    </StackPanel>
-    
-    <!-- Lista de archivos -->
-    <ListBox x:Name="FilesListBox"
-             Grid.Row="2"
-             ItemsSource="{Binding LargestFiles}"
-             Background="White"
-             Foreground="Black">
+        <DockPanel Grid.Column="1">
+            <Button Content="☰" DockPanel.Dock="Top" Width="50" Command="{Binding ToggleMenuCommand}" Margin="5" HorizontalAlignment="Left" IsVisible="{Binding !MenuVisible}"/>
 
-      <ListBox.ContextMenu>
-        <ContextMenu>
-          <MenuItem Header="Abrir archivo"
-                    Command="{Binding OpenFileCommand}"
-                    CommandParameter="{Binding SelectedItem, ElementName=FilesListBox}" />
-          <MenuItem Header="Abrir carpeta"
-                    Command="{Binding OpenFolderCommand}"
-                    CommandParameter="{Binding SelectedItem, ElementName=FilesListBox}" />
-          <MenuItem Header="Copiar ruta"
-                    Command="{Binding CopyPathCommand}"
-                    CommandParameter="{Binding SelectedItem, ElementName=FilesListBox}" />
-          <MenuItem Header="Eliminar"
-                    Command="{Binding MoveToTrashCommand}"
-                    CommandParameter="{Binding SelectedItem, ElementName=FilesListBox}" />
-        </ContextMenu>
-      </ListBox.ContextMenu>
-
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-          <StackPanel Margin="5" PointerPressed="OnItemPointerPressed">
-            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-            <TextBlock Text="{Binding Size, Converter={StaticResource BytesToMbConverter}}"
-                       FontStyle="Italic"/>
-          </StackPanel>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-  </Grid>
+            <ContentControl Content="{Binding SelectedView}" />
+        </DockPanel>
+    </Grid>
 </Window>

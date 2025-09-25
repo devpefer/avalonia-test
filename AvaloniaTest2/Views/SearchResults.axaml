@@ -1,0 +1,15 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:global1="clr-namespace:"
+        xmlns:viewModels="clr-namespace:AvaloniaTest2.ViewModels"
+        x:Class="AvaloniaTest2.Views.SearchResults"
+        Width="500" Height="400"
+        Title="{Binding WindowTitle}"
+        x:DataType="viewModels:SearchResultsViewModel">
+    <StackPanel Margin="10">
+        <TextBlock Text="{Binding CurrentFile}" Foreground="Gray" Margin="0,0,0,5"/>
+        <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress}" Height="20" Margin="0,0,0,5"/>
+        <ListBox ItemsSource="{Binding Results}" Height="250"/>
+        <Button Content="Cerrar" Command="{Binding CloseCommand}" Margin="0,5,0,0"/>
+    </StackPanel>
+</Window>

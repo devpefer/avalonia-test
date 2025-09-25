@@ -1,5 +1,6 @@
 /home/devpefer/.nuget/packages/avalonia/11.3.6/ref/net8.0/Avalonia.Base.dll
 /home/devpefer/.nuget/packages/avalonia.controls.colorpicker/11.3.6/lib/net8.0/Avalonia.Controls.ColorPicker.dll
+/home/devpefer/.nuget/packages/avalonia.controls.datagrid/11.2.5/lib/net8.0/Avalonia.Controls.DataGrid.dll
 /home/devpefer/.nuget/packages/avalonia/11.3.6/ref/net8.0/Avalonia.Controls.dll
 /home/devpefer/.nuget/packages/avalonia/11.3.6/ref/net8.0/Avalonia.DesignerSupport.dll
 /home/devpefer/.nuget/packages/avalonia.desktop/11.3.6/lib/net8.0/Avalonia.Desktop.dll
@@ -23,13 +24,20 @@
 /home/devpefer/.nuget/packages/avalonia.win32/11.3.6/lib/net8.0/Avalonia.Win32.dll
 /home/devpefer/.nuget/packages/avalonia.x11/11.3.6/lib/net8.0/Avalonia.X11.dll
 /home/devpefer/.nuget/packages/communitytoolkit.mvvm/8.2.1/lib/net6.0/CommunityToolkit.Mvvm.dll
+/home/devpefer/.nuget/packages/communitytoolkit.winui.notifications/7.1.2/lib/net5.0/CommunityToolkit.WinUI.Notifications.dll
+/home/devpefer/.nuget/packages/fluentavaloniaui/2.4.0/lib/net6.0/FluentAvalonia.dll
 /home/devpefer/.nuget/packages/harfbuzzsharp/8.3.1.1/lib/net8.0/HarfBuzzSharp.dll
+/home/devpefer/.nuget/packages/material.avalonia/3.13.1/lib/net8.0/Material.Avalonia.dll
+/home/devpefer/.nuget/packages/material.avalonia/3.13.1/lib/net8.0/Material.Colors.dll
+/home/devpefer/.nuget/packages/material.avalonia/3.13.1/lib/net8.0/Material.Ripple.dll
+/home/devpefer/.nuget/packages/material.avalonia/3.13.1/lib/net8.0/Material.Styles.dll
 /home/devpefer/.nuget/packages/microcom.runtime/0.11.0/lib/net5.0/MicroCom.Runtime.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.CSharp.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.VisualBasic.Core.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.VisualBasic.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.Win32.Primitives.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.Win32.Registry.dll
+/home/devpefer/.nuget/packages/microsoft.win32.systemevents/7.0.0/lib/net7.0/Microsoft.Win32.SystemEvents.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/mscorlib.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/netstandard.dll
 /home/devpefer/.nuget/packages/skiasharp/2.88.9/lib/net6.0/SkiaSharp.dll
@@ -63,6 +71,7 @@
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Diagnostics.TraceSource.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Diagnostics.Tracing.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.dll
+/home/devpefer/.nuget/packages/system.drawing.common/7.0.0/lib/net7.0/System.Drawing.Common.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Drawing.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Drawing.Primitives.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Dynamic.Runtime.dll
@@ -180,6 +189,7 @@
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Web.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Web.HttpUtility.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Windows.dll
+/home/devpefer/.nuget/packages/system.windows.forms/4.0.0/lib/System.Windows.Forms.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Xml.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Xml.Linq.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Xml.ReaderWriter.dll
