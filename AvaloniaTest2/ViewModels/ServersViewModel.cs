@@ -11,7 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AvaloniaTest2.ViewModels;
 
-public class ServersViewModel
+public class ServersViewModel : ViewModelBase
 {
     public ObservableCollection<ServerItem> Servers { get; } = new();
     public ICommand AddServerCommand { get; }

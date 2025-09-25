@@ -93,9 +93,15 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         RootItems.Add(rootItem);
         _ = Task.Run(async () =>
         {
+            IsCalculatingSizes = true;
             await LoadRecursiveAsync(rootItem);
             await CalculateDirectorySizeBottomUpAsync(rootItem);
-            await Dispatcher.UIThread.InvokeAsync(() => SizesCalculationCompleted?.Invoke());
+            await Dispatcher.UIThread.InvokeAsync(() => 
+            {
+                SizesCalculationCompleted?.Invoke();
+                CurrentItemBeingProcessed = null; // limpia el texto
+            });
+            IsCalculatingSizes = false;
         });
     }
 
@@ -107,6 +113,7 @@ public class FileExplorerViewModel : INotifyPropertyChanged
 
         foreach (var entry in entries)
         {
+            await Dispatcher.UIThread.InvokeAsync(() => CurrentItemBeingProcessed = entry);
             bool isDir = false;
             try { isDir = Directory.Exists(entry); } catch { continue; }
 

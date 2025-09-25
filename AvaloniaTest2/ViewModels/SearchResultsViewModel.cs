@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using AvaloniaTest2;
 
-public class SearchResultsViewModel : INotifyPropertyChanged
+namespace AvaloniaTest2.ViewModels;
+
+public class SearchResultsViewModel : ViewModelBase
 {
     public ObservableCollection<string> Results { get; } = new();
 
@@ -79,6 +80,7 @@ public class SearchResultsViewModel : INotifyPropertyChanged
 
     public async Task StartSearchAsync(string fileName)
     {
+        WindowTitle = $"Resultados de la búsqueda: {fileName}";
         Results.Clear();
         CurrentFile = null;
         Progress = 0;
