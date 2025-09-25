@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "qEiRXA4yzF8=",
+  "dgSpecHash": "TOBBEBBud+c=",
   "success": true,
   "projectFilePath": "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/AvaloniaTest2.csproj",
   "expectedPackageFiles": [
@@ -21,6 +21,7 @@
     "/home/devpefer/.nuget/packages/avalonia.win32/11.3.6/avalonia.win32.11.3.6.nupkg.sha512",
     "/home/devpefer/.nuget/packages/avalonia.x11/11.3.6/avalonia.x11.11.3.6.nupkg.sha512",
     "/home/devpefer/.nuget/packages/communitytoolkit.mvvm/8.2.1/communitytoolkit.mvvm.8.2.1.nupkg.sha512",
+    "/home/devpefer/.nuget/packages/communitytoolkit.winui.notifications/7.1.2/communitytoolkit.winui.notifications.7.1.2.nupkg.sha512",
     "/home/devpefer/.nuget/packages/fluentavaloniaui/2.4.0/fluentavaloniaui.2.4.0.nupkg.sha512",
     "/home/devpefer/.nuget/packages/harfbuzzsharp/8.3.1.1/harfbuzzsharp.8.3.1.1.nupkg.sha512",
     "/home/devpefer/.nuget/packages/harfbuzzsharp.nativeassets.linux/8.3.1.1/harfbuzzsharp.nativeassets.linux.8.3.1.1.nupkg.sha512",
@@ -37,6 +38,7 @@
     "/home/devpefer/.nuget/packages/skiasharp.nativeassets.win32/2.88.9/skiasharp.nativeassets.win32.2.88.9.nupkg.sha512",
     "/home/devpefer/.nuget/packages/system.drawing.common/7.0.0/system.drawing.common.7.0.0.nupkg.sha512",
     "/home/devpefer/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
+    "/home/devpefer/.nuget/packages/system.valuetuple/4.5.0/system.valuetuple.4.5.0.nupkg.sha512",
     "/home/devpefer/.nuget/packages/system.windows.forms/4.0.0/system.windows.forms.4.0.0.nupkg.sha512",
     "/home/devpefer/.nuget/packages/tmds.dbus.protocol/0.21.2/tmds.dbus.protocol.0.21.2.nupkg.sha512"
   ],

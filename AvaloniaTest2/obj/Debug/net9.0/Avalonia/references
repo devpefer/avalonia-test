@@ -24,6 +24,7 @@
 /home/devpefer/.nuget/packages/avalonia.win32/11.3.6/lib/net8.0/Avalonia.Win32.dll
 /home/devpefer/.nuget/packages/avalonia.x11/11.3.6/lib/net8.0/Avalonia.X11.dll
 /home/devpefer/.nuget/packages/communitytoolkit.mvvm/8.2.1/lib/net6.0/CommunityToolkit.Mvvm.dll
+/home/devpefer/.nuget/packages/communitytoolkit.winui.notifications/7.1.2/lib/net5.0/CommunityToolkit.WinUI.Notifications.dll
 /home/devpefer/.nuget/packages/fluentavaloniaui/2.4.0/lib/net6.0/FluentAvalonia.dll
 /home/devpefer/.nuget/packages/harfbuzzsharp/8.3.1.1/lib/net8.0/HarfBuzzSharp.dll
 /home/devpefer/.nuget/packages/material.avalonia/3.13.1/lib/net8.0/Material.Avalonia.dll

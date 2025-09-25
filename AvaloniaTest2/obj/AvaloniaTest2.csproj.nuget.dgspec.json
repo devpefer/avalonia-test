@@ -68,6 +68,10 @@
               "target": "Package",
               "version": "[8.2.1, )"
             },
+            "CommunityToolkit.WinUI.Notifications": {
+              "target": "Package",
+              "version": "[7.1.2, )"
+            },
             "FluentAvaloniaUI": {
               "target": "Package",
               "version": "[2.4.0, )"
