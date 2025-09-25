@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
@@ -13,7 +14,7 @@ namespace AvaloniaTest2;
 public partial class App : Application
 {
     private TrayIcon? _tray;
-    
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -30,8 +31,12 @@ public partial class App : Application
             {
                 DataContext = new MainWindowViewModel(),
             };
-            
-            //SetupTray(desktop);
+
+            if (OperatingSystem.IsWindows())
+            {
+                SetupTray(desktop);
+            }
+
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             desktop.MainWindow.Show();
 
@@ -54,7 +59,7 @@ public partial class App : Application
             BindingPlugins.DataValidators.Remove(plugin);
         }
     }
-    
+
     private void SetupTray(IClassicDesktopStyleApplicationLifetime desktop)
     {
         _tray = new TrayIcon
