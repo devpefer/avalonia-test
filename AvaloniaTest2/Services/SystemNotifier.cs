@@ -72,13 +72,18 @@ namespace AvaloniaTest2.Services
 #if WINDOWS
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // Notificación en Windows
+                // Construye el contenido
                 var toastContent = new ToastContentBuilder()
                     .AddText(title)
                     .AddText(message)
                     .GetToastContent();
+
+                // Crea el ToastNotification
+                var toast = new ToastNotification(toastContent.GetXml());
+
+                // Muestra el toast usando DesktopNotificationManagerCompat
                 DesktopNotificationManagerCompat.CreateToastNotifier("MiAppAvalonia")
-                    .Show(toastContent.CreateNotification());
+                    .Show(toast);
             }
 #else
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
