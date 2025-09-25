@@ -18,7 +18,6 @@ public class MainWindowViewModel : INotifyPropertyChanged
     };
 
     private string _selectedMenuItem = "Explorador de Archivos";
-
     public string SelectedMenuItem
     {
         get => _selectedMenuItem;
@@ -34,7 +33,6 @@ public class MainWindowViewModel : INotifyPropertyChanged
     }
 
     private object _selectedView;
-
     public object SelectedView
     {
         get => _selectedView;
@@ -47,15 +45,10 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
     // Control de visibilidad del menú
     private bool _menuVisible = true;
-
     public bool MenuVisible
     {
         get => _menuVisible;
-        set
-        {
-            _menuVisible = value;
-            OnPropertyChanged();
-        }
+        set { _menuVisible = value; OnPropertyChanged(); }
     }
 
     public ICommand ToggleMenuCommand { get; }
@@ -77,7 +70,6 @@ public class MainWindowViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
-
     private void OnPropertyChanged([CallerMemberName] string? name = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

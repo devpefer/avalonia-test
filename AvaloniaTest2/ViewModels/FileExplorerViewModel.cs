@@ -18,7 +18,6 @@ using AvaloniaTest2.Helpers;
 using AvaloniaTest2.Interfaces;
 using AvaloniaTest2.Models;
 using AvaloniaTest2.Views;
-using DriveInfo = System.IO.DriveInfo;
 
 namespace AvaloniaTest2.ViewModels;
 
@@ -27,77 +26,94 @@ public class FileExplorerViewModel : INotifyPropertyChanged
     private readonly IMessengerService _messengerService;
     private readonly HashSet<string> _visitedPaths = new(StringComparer.OrdinalIgnoreCase);
 
-    public event Action<FileSystemItem>? ItemSelectedRequested;
+    private readonly string[] _blockedPaths = OperatingSystem.IsWindows()
+        ? new[] { @"C:\Windows\WinSxS", @"C:\Windows\System32\config" }
+        : Array.Empty<string>();
+
+    private CancellationTokenSource? _cancellation;
+    private int _activeSizeTasks = 0;
+
+    public ObservableCollection<FileSystemItem> RootItems { get; } = new();
+    public ObservableCollection<DriveInfo> Drives { get; } = new();
+    public Array SortModes => Enum.GetValues(typeof(SortMode));
 
     private FileSystemItem? _selectedItem;
+
     public FileSystemItem? SelectedItem
     {
         get => _selectedItem;
-        set { _selectedItem = value; OnPropertyChanged(); }
+        set => SetProperty(ref _selectedItem, value);
     }
 
     private string _searchQuery = "";
+
     public string SearchQuery
     {
         get => _searchQuery;
-        set { _searchQuery = value; OnPropertyChanged(); }
+        set => SetProperty(ref _searchQuery, value);
     }
 
     private string? _currentItemBeingProcessed;
+
     public string? CurrentItemBeingProcessed
     {
         get => _currentItemBeingProcessed;
-        set { _currentItemBeingProcessed = value; OnPropertyChanged(); }
+        private set => SetProperty(ref _currentItemBeingProcessed, value);
     }
 
-    private int _pendingSizeTasks = 0;
     private bool _isCalculatingSizes;
+
     public bool IsCalculatingSizes
     {
         get => _isCalculatingSizes;
-        set { _isCalculatingSizes = value; OnPropertyChanged(); }
+        private set => SetProperty(ref _isCalculatingSizes, value);
     }
 
-    public event Action? SizesCalculationCompleted;
+    private SortMode _selectedSort = SortMode.SizeDesc;
+
+    public SortMode SelectedSort
+    {
+        get => _selectedSort;
+        set
+        {
+            if (SetProperty(ref _selectedSort, value))
+                ApplySorting();
+        }
+    }
 
     public ICommand OpenFileCommand { get; }
     public ICommand OpenFolderCommand { get; }
     public ICommand CopyPathCommand { get; }
     public ICommand MoveToTrashCommand { get; }
     public ICommand SearchCommand { get; }
+    public ICommand CancelCommand { get; }
 
-    public ObservableCollection<FileSystemItem> RootItems { get; } = new();
-    public ObservableCollection<DriveInfo> Drives { get; } = new();
-    public Array SortModes => Enum.GetValues(typeof(SortMode));
-
-    private SortMode _selectedSort = SortMode.SizeDesc;
-    public SortMode SelectedSort
-    {
-        get => _selectedSort;
-        set { _selectedSort = value; OnPropertyChanged(); ApplySortingToAll(); }
-    }
-
-    private readonly string[] blockedPaths = new[]
-    {
-        @"C:\Windows\WinSxS",
-        @"C:\Windows\System32\config"
-    };
+    public event Action? SizesCalculationCompleted;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public FileExplorerViewModel(IMessengerService messengerService)
     {
         _messengerService = messengerService;
-        GetDriveTotalSize();
 
         OpenFileCommand = new RelayCommand<FileSystemItem>(OpenFile);
         OpenFolderCommand = new RelayCommand<FileSystemItem>(OpenFolder);
         CopyPathCommand = new RelayCommand<FileSystemItem>(CopyPath);
         MoveToTrashCommand = new RelayCommand<FileSystemItem>(DeleteFileFromList);
-        SearchCommand = new RelayCommand<string>(Search);
+        SearchCommand = new RelayCommand<string>(async q => await StartSearchAsync(q));
+        CancelCommand = new RelayCommand<string>(CancelSearch);
 
+        InitializeDrives();
+    }
+
+    private void InitializeDrives()
+    {
         if (OperatingSystem.IsWindows())
         {
-            foreach (var drive in DriveInfo.GetDrives())
-                AddDriveRoot(drive.Name, drive.RootDirectory.FullName, drive);
+            foreach (var d in DriveInfo.GetDrives())
+            {
+                if (!d.IsReady) continue;
+                AddDriveRoot(d.Name, d.RootDirectory.FullName, d);
+            }
         }
         else
         {
@@ -105,13 +121,326 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ApplySortingToAll()
+    private void AddDriveRoot(string name, string path, DriveInfo? drive)
     {
-        foreach (var root in RootItems)
-            SortChildrenInPlace(root, SelectedSort);
+        long size = -1;
+        try
+        {
+            if (drive?.IsReady == true) size = drive.TotalSize;
+        }
+        catch
+        {
+        }
+
+        var root = new FileSystemItem
+        {
+            Name = name,
+            FullPath = path,
+            IsDirectory = true,
+            LogicalSize = size
+        };
+        root.Children.Add(new FileSystemItem { Name = "Cargando...", LogicalSize = -1 });
+        RootItems.Add(root);
     }
 
-    private void SortChildrenInPlace(FileSystemItem parent, SortMode sortMode)
+    // ===================== BUSQUEDA AVANZADA =====================
+    private void CancelSearch(string file)
+    {
+        _cancellation?.Cancel();
+    }
+
+    private async Task StartSearchAsync(string query)
+    {
+        CancelSearch(query);
+        _cancellation = new CancellationTokenSource();
+        var token = _cancellation.Token;
+
+        RootItems.Clear();
+        IsCalculatingSizes = true;
+        CurrentItemBeingProcessed = null;
+
+        var results = new ObservableCollection<FileSystemItem>();
+
+        try
+        {
+            foreach (var drive in Drives)
+            {
+                string rootPath = OperatingSystem.IsWindows() ? drive.Name : "/";
+                await Task.Run(async () => { await SearchFilesRecursive(rootPath, query, results, token); }, token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                foreach (var r in results) RootItems.Add(r);
+                IsCalculatingSizes = false;
+                CurrentItemBeingProcessed = null;
+            });
+        }
+    }
+
+    private async Task SearchFilesRecursive(string path, string query, ObservableCollection<FileSystemItem> results,
+        CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        CurrentItemBeingProcessed = path;
+
+        FileInfo[] files = [];
+        DirectoryInfo[] dirs = [];
+
+        try
+        {
+            files = SafeGetFiles(new DirectoryInfo(path));
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            dirs = SafeGetDirectories(new DirectoryInfo(path));
+        }
+        catch
+        {
+        }
+
+        foreach (var f in files)
+        {
+            token.ThrowIfCancellationRequested();
+            if (Path.GetFileName(f.FullName).Contains(query, StringComparison.OrdinalIgnoreCase))
+            {
+                var fi = new FileInfo(f.FullName);
+                var item = new FileSystemItem
+                {
+                    Name = fi.Name,
+                    FullPath = fi.FullName,
+                    IsDirectory = false,
+                    LogicalSize = fi.Length
+                };
+                await Dispatcher.UIThread.InvokeAsync(() => results.Add(item));
+            }
+        }
+
+        foreach (var d in dirs)
+        {
+            token.ThrowIfCancellationRequested();
+            if (_visitedPaths.Add(d.FullName) && !_blockedPaths.Any(bp => d.FullName.StartsWith(bp, StringComparison.OrdinalIgnoreCase)))
+            {
+                var di = new DirectoryInfo(d.FullName);
+                if ((di.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device)) != 0) continue;
+                await SearchFilesRecursive(d.FullName, query, results, token);
+            }
+        }
+    }
+
+    // ===================== EXPANDIR Y CALCULAR TAMAÑOS =====================
+    public async Task LoadChildren(FileSystemItem parent)
+    {
+        if (!parent.IsDirectory) return;
+
+        // Si ya cargamos previamente, no lo hacemos otra vez
+        if (parent.Children.Count == 1 && parent.Children[0].Name == "Cargando...")
+            parent.Children.Clear();
+        else if (parent.Children.Count > 0)
+            return;
+
+        await Task.Run(async () =>
+        {
+            string[] files = Array.Empty<string>();
+            string[] dirs = Array.Empty<string>();
+            try
+            {
+                files = Directory.GetFiles(parent.FullPath);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                dirs = Directory.GetDirectories(parent.FullPath);
+            }
+            catch
+            {
+            }
+
+            foreach (var dir in dirs)
+            {
+                if (_blockedPaths.Any(bp => dir.StartsWith(bp, StringComparison.OrdinalIgnoreCase))) continue;
+                DirectoryInfo di;
+                try
+                {
+                    di = new DirectoryInfo(dir);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                if ((di.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device)) != 0) continue;
+
+                var childDir = new FileSystemItem
+                {
+                    Name = di.Name,
+                    FullPath = di.FullName,
+                    IsDirectory = true,
+                    LogicalSize = 0,
+                    Parent = parent
+                };
+
+                // Añadimos un hijo "Cargando..." para que sea expandible
+                childDir.Children.Add(new FileSystemItem { Name = "Cargando...", LogicalSize = -1 });
+
+                await Dispatcher.UIThread.InvokeAsync(() => parent.Children.Add(childDir));
+
+                Interlocked.Increment(ref _activeSizeTasks);
+                _ = CalculateDirectorySizeAsync(childDir);
+            }
+
+            foreach (var file in files)
+            {
+                if (_blockedPaths.Any(bp => file.StartsWith(bp, StringComparison.OrdinalIgnoreCase))) continue;
+                FileInfo fi;
+                try
+                {
+                    fi = new FileInfo(file);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                if ((fi.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) !=
+                    0) continue;
+
+                var child = new FileSystemItem
+                {
+                    Name = fi.Name,
+                    FullPath = fi.FullName,
+                    IsDirectory = false,
+                    LogicalSize = fi.Length,
+                    Parent = parent
+                };
+
+                await Dispatcher.UIThread.InvokeAsync(() => parent.Children.Add(child));
+            }
+        });
+    }
+
+    private async Task CalculateDirectorySizeAsync(FileSystemItem dirItem)
+    {
+        try
+        {
+            var di = new DirectoryInfo(dirItem.FullPath);
+            long size = await GetDirectorySizeSafeAsync(di);
+            dirItem.LogicalSize = size;
+            await UpdateParentSizesAsync(dirItem);
+        }
+        finally
+        {
+            if (Interlocked.Decrement(ref _activeSizeTasks) == 0)
+            {
+                ApplySorting();
+                IsCalculatingSizes = false;
+                CurrentItemBeingProcessed = null;
+                SizesCalculationCompleted?.Invoke();
+            }
+        }
+    }
+
+    private async Task UpdateParentSizesAsync(FileSystemItem item)
+    {
+        if (item.Parent == null) return;
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            item.Parent.LogicalSize = item.Parent.Children.Sum(c => c.LogicalSize > 0 ? c.LogicalSize : 0);
+        });
+        if (item.Parent.Parent != null)
+            await UpdateParentSizesAsync(item.Parent);
+    }
+
+    private async Task<long> GetDirectorySizeSafeAsync(DirectoryInfo dir, int maxConcurrentTasks = 8)
+    {
+        long total = 0;
+        FileInfo[] files = Array.Empty<FileInfo>();
+        DirectoryInfo[] dirs = Array.Empty<DirectoryInfo>();
+        try
+        {
+            files = dir.GetFiles();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            dirs = dir.GetDirectories();
+        }
+        catch
+        {
+        }
+
+        var semaphore = new SemaphoreSlim(maxConcurrentTasks);
+        var tasks = new List<Task>();
+
+        foreach (var f in files)
+        {
+            tasks.Add(Task.Run(async () =>
+            {
+                await semaphore.WaitAsync();
+                try
+                {
+                    if ((f.Attributes &
+                         (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) != 0) return;
+                    if (_blockedPaths.Any(bp => f.FullName.StartsWith(bp, StringComparison.OrdinalIgnoreCase))) return;
+                    CurrentItemBeingProcessed = f.FullName;
+                    Interlocked.Add(ref total, f.Length);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }));
+        }
+
+        foreach (var d in dirs)
+        {
+            tasks.Add(Task.Run(async () =>
+            {
+                await semaphore.WaitAsync();
+                try
+                {
+                    long subdirSize = 0;
+                    try
+                    {
+                        subdirSize = await GetDirectorySizeSafeAsync(d, maxConcurrentTasks);
+                    }
+                    catch
+                    {
+                        // Ignorar directorios inaccesibles
+                    }
+                    Interlocked.Add(ref total, subdirSize);
+                }
+                finally { semaphore.Release(); }
+            }));
+        }
+
+
+        await Task.WhenAll(tasks);
+        return total;
+    }
+
+    private void ApplySorting()
+    {
+        foreach (var root in RootItems)
+            SortRecursive(root, SelectedSort);
+    }
+
+    private void SortRecursive(FileSystemItem parent, SortMode sortMode)
     {
         if (!parent.Children.Any()) return;
 
@@ -129,188 +458,39 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         }
 
         foreach (var child in parent.Children.Where(c => c.IsDirectory))
-            SortChildrenInPlace(child, sortMode);
+            SortRecursive(child, sortMode);
     }
-
-    private async Task AddDriveRoot(string name, string fullPath, DriveInfo? drive)
+    
+    private FileInfo[] SafeGetFiles(DirectoryInfo dir)
     {
-        long size = -1;
-        try { if (drive?.IsReady == true) size = drive.TotalSize; } catch { }
-
-        var item = new FileSystemItem
-        {
-            Name = name,
-            FullPath = fullPath,
-            IsDirectory = true,
-            LogicalSize = size
-        };
-
-        item.Children.Add(new FileSystemItem { Name = "Cargando...", LogicalSize = -1 });
-        RootItems.Add(item);
+        try { return dir.GetFiles(); }
+        catch { return Array.Empty<FileInfo>(); }
     }
 
-    public async Task LoadChildren(FileSystemItem parent)
+    private DirectoryInfo[] SafeGetDirectories(DirectoryInfo dir)
     {
-        if (!parent.IsDirectory) return;
-
-        parent.Children.Clear();
-        await Task.Run(() => StartCalculatingSizesRecursively(parent));
+        try { return dir.GetDirectories(); }
+        catch { return Array.Empty<DirectoryInfo>(); }
     }
 
-    private async Task StartCalculatingSizesRecursively(FileSystemItem parent)
-    {
-        if (!parent.IsDirectory || !_visitedPaths.Add(parent.FullPath)) return;
+    
+    // private FileInfo[] SafeGetFiles(DirectoryInfo dir)
+    // {
+    //     try { return dir.GetFiles(); }
+    //     catch (UnauthorizedAccessException) { return Array.Empty<FileInfo>(); }
+    //     catch (IOException) { return Array.Empty<FileInfo>(); }
+    //     catch { return Array.Empty<FileInfo>(); }
+    // }
+    //
+    // private DirectoryInfo[] SafeGetDirectories(DirectoryInfo dir)
+    // {
+    //     try { return dir.GetDirectories(); }
+    //     catch (UnauthorizedAccessException) { return Array.Empty<DirectoryInfo>(); }
+    //     catch (IOException) { return Array.Empty<DirectoryInfo>(); }
+    //     catch { return Array.Empty<DirectoryInfo>(); }
+    // }
 
-        string[] files = Array.Empty<string>();
-        string[] directories = Array.Empty<string>();
-
-        try { files = Directory.GetFiles(parent.FullPath); } catch { }
-        try { directories = Directory.GetDirectories(parent.FullPath); } catch { }
-
-        foreach (var file in files)
-        {
-            try
-            {
-                if (blockedPaths.Any(bp => file.StartsWith(bp, StringComparison.OrdinalIgnoreCase)))
-                    continue;
-
-                var fi = new FileInfo(file);
-                if ((fi.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) != 0)
-                    continue;
-
-                var childFile = new FileSystemItem
-                {
-                    Name = fi.Name,
-                    FullPath = fi.FullName,
-                    IsDirectory = false,
-                    LogicalSize = fi.Length,
-                    Parent = parent
-                };
-
-                Dispatcher.UIThread.Post(() =>
-                {
-                    parent.Children.Add(childFile);
-                    parent.LogicalSize += childFile.LogicalSize;
-                });
-            }
-            catch { }
-        }
-
-        foreach (var dir in directories)
-        {
-            try
-            {
-                if (blockedPaths.Any(bp => dir.StartsWith(bp, StringComparison.OrdinalIgnoreCase)))
-                    continue;
-
-                var di = new DirectoryInfo(dir);
-                if ((di.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device)) != 0)
-                    continue;
-
-                var childDir = new FileSystemItem
-                {
-                    Name = di.Name,
-                    FullPath = di.FullName,
-                    IsDirectory = true,
-                    LogicalSize = 0,
-                    Parent = parent
-                };
-
-                Dispatcher.UIThread.Post(() => parent.Children.Add(childDir));
-
-                Interlocked.Increment(ref _pendingSizeTasks);
-                IsCalculatingSizes = true;
-
-                _ = Task.Run(async () =>
-                {
-                    long size = await GetDirectorySizeSafeAsync(di, 2000, 8);
-                    childDir.LogicalSize = size;
-                    await UpdateParentSizesAsync(childDir);
-
-                    if (Interlocked.Decrement(ref _pendingSizeTasks) == 0)
-                    {
-                        ApplySortingToAll();
-                        IsCalculatingSizes = false;
-                        CurrentItemBeingProcessed = null;
-                        SizesCalculationCompleted?.Invoke();
-                    }
-                });
-
-                StartCalculatingSizesRecursively(childDir);
-            }
-            catch { }
-        }
-    }
-
-    private async Task UpdateParentSizesAsync(FileSystemItem item)
-    {
-        var parent = item.Parent;
-        if (parent == null) return;
-
-        await Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            long newSize = parent.Children.Sum(c => c.LogicalSize > 0 ? c.LogicalSize : 0);
-            parent.LogicalSize = newSize;
-        });
-
-        if (parent.Parent != null)
-            await UpdateParentSizesAsync(parent);
-    }
-
-    private async Task<long> GetDirectorySizeSafeAsync(DirectoryInfo dir, int timeoutMsPerFile = 500, int maxConcurrentTasks = 8)
-    {
-        long totalSize = 0;
-        var files = Array.Empty<FileInfo>();
-        var subDirs = Array.Empty<DirectoryInfo>();
-
-        try { files = dir.GetFiles(); } catch { }
-        try { subDirs = dir.GetDirectories(); } catch { }
-
-        object sizeLock = new();
-        using var semaphore = new SemaphoreSlim(maxConcurrentTasks);
-
-        var fileTasks = files.Select(async f =>
-        {
-            await semaphore.WaitAsync();
-            try
-            {
-                if ((f.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) != 0)
-                    return;
-
-                if (blockedPaths.Any(bp => f.FullName.StartsWith(bp, StringComparison.OrdinalIgnoreCase)))
-                    return;
-
-                CurrentItemBeingProcessed = f.FullName;
-                var t = Task.Run(() => f.Length);
-
-                if (await Task.WhenAny(t, Task.Delay(timeoutMsPerFile)) == t)
-                    lock (sizeLock) totalSize += t.Result;
-            }
-            catch { }
-            finally { semaphore.Release(); }
-        }).ToArray();
-
-        var dirTasks = subDirs.Select(async sub =>
-        {
-            await semaphore.WaitAsync();
-            try
-            {
-                if ((sub.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device)) != 0) return;
-                if (blockedPaths.Any(bp => sub.FullName.StartsWith(bp, StringComparison.OrdinalIgnoreCase))) return;
-
-                CurrentItemBeingProcessed = sub.FullName;
-                long subSize = await GetDirectorySizeSafeAsync(sub, timeoutMsPerFile, maxConcurrentTasks);
-                lock (sizeLock) totalSize += subSize;
-            }
-            catch { }
-            finally { semaphore.Release(); }
-        }).ToArray();
-
-        await Task.WhenAll(fileTasks.Concat(dirTasks));
-        return totalSize;
-    }
-
-    // --- Métodos UI / Files ---
+    // ===================== COMANDOS =====================
     private void OpenFile(FileSystemItem? item)
     {
         if (item == null) return;
@@ -319,131 +499,138 @@ public class FileExplorerViewModel : INotifyPropertyChanged
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 Process.Start(new ProcessStartInfo(item.FullPath) { UseShellExecute = true });
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                Process.Start(new ProcessStartInfo("xdg-open", item.FullPath) { UseShellExecute = false });
+                Process.Start("xdg-open", item.FullPath);
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                Process.Start(new ProcessStartInfo("open", item.FullPath) { UseShellExecute = false });
+                Process.Start("open", item.FullPath);
         }
-        catch { }
+        catch
+        {
+        }
     }
 
     private void OpenFolder(FileSystemItem? item)
     {
         if (item == null) return;
+        string? folder = item.IsDirectory ? item.FullPath : Path.GetDirectoryName(item.FullPath);
+        if (string.IsNullOrEmpty(folder)) return;
+
         try
         {
-            string? folderPath = Path.GetDirectoryName(item.FullPath);
-            if (string.IsNullOrEmpty(folderPath)) return;
-
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                Process.Start(new ProcessStartInfo("explorer.exe", folderPath) { UseShellExecute = true });
+                Process.Start(new ProcessStartInfo("explorer.exe", folder) { UseShellExecute = true });
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                Process.Start(new ProcessStartInfo("xdg-open", folderPath) { UseShellExecute = false });
+                Process.Start("xdg-open", folder);
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                Process.Start(new ProcessStartInfo("open", folderPath) { UseShellExecute = false });
+                Process.Start("open", folder);
         }
-        catch { }
+        catch
+        {
+        }
     }
 
     private async void CopyPath(FileSystemItem? item)
     {
         if (item == null) return;
-
-        var window = Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-            ? desktop.MainWindow
-            : null;
-
-        if (window != null)
-            await window.Clipboard.SetTextAsync(item.FullPath);
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            await desktop.MainWindow.Clipboard.SetTextAsync(item.FullPath);
+        }
     }
 
     private async void DeleteFileFromList(FileSystemItem? item)
     {
         if (item == null) return;
+        if (Avalonia.Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            return;
 
-        var mainWindow = Avalonia.Application.Current?.ApplicationLifetime
-            is IClassicDesktopStyleApplicationLifetime desktop
-            ? desktop.MainWindow
-            : null;
-        if (mainWindow == null) return;
-
-        bool confirm = await _messengerService.ShowConfirmationDialog(mainWindow,
-            $"¿Deseas enviar el fichero a la papelera?\n{item.Name}");
+        bool confirm =
+            await _messengerService.ShowConfirmationDialog(desktop.MainWindow!,
+                $"¿Deseas enviar {item.Name} a la papelera?");
         if (!confirm) return;
 
+        bool success = false;
         try
         {
-            bool ok = MoveToTrash(item);
-            if (ok) DeleteItemFromRootItems(item);
-            await _messengerService.ShowMessageDialog(mainWindow,
-                ok ? $"Fichero {item.Name} enviado a la papelera correctamente."
-                    : $"No se pudo enviar el fichero {item.Name} a la papelera.");
+            success = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? MoveToTrashWindows(item)
+                : RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                    ? await MoveToTrashLinuxAsync(item)
+                    : await MoveToTrashMacAsync(item);
+
+            if (success) RemoveFromRoot(item);
+
+            await _messengerService.ShowMessageDialog(desktop.MainWindow!,
+                success
+                    ? $"Fichero {item.Name} enviado a la papelera."
+                    : $"No se pudo enviar {item.Name} a la papelera.");
         }
         catch (Exception ex)
         {
-            await _messengerService.ShowMessageDialog(mainWindow, $"Error al mover a la papelera:\n{ex.Message}");
+            await _messengerService.ShowMessageDialog(desktop.MainWindow!, $"Error: {ex.Message}");
         }
     }
 
-    private bool MoveToTrash(FileSystemItem item)
+    private static bool MoveToTrashWindows(FileSystemItem item)
     {
         try
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(item.FullPath,
-                    Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,
-                    Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
-                return true;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                var psi = new ProcessStartInfo("gio", $"trash \"{item.FullPath}\"") { UseShellExecute = false };
-                var p = Process.Start(psi);
-                p.WaitForExit();
-                return p.ExitCode == 0;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                string cmd = $"tell application \"Finder\" to delete POSIX file \"{item.FullPath}\"";
-                var psi = new ProcessStartInfo("osascript", $"-e \"{cmd}\"") { UseShellExecute = true };
-                var p = Process.Start(psi);
-                p.WaitForExit();
-                return p.ExitCode == 0;
-            }
+            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(item.FullPath,
+                Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,
+                Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+            return true;
         }
-        catch { }
-
-        return false;
+        catch
+        {
+            return false;
+        }
     }
 
-    private void DeleteItemFromRootItems(FileSystemItem item)
+    private static async Task<bool> MoveToTrashLinuxAsync(FileSystemItem item)
     {
-        if (RootItems.Contains(item)) { RootItems.Remove(item); return; }
-        foreach (var root in RootItems) RemoveItemRecursive(root, item);
+        var p = Process.Start(new ProcessStartInfo("gio", $"trash \"{item.FullPath}\"") { UseShellExecute = false });
+        if (p == null) return false;
+        await p.WaitForExitAsync();
+        return p.ExitCode == 0;
     }
 
-    private void RemoveItemRecursive(FileSystemItem parent, FileSystemItem item)
+    private static async Task<bool> MoveToTrashMacAsync(FileSystemItem item)
+    {
+        string cmd = $"tell application \"Finder\" to delete POSIX file \"{item.FullPath}\"";
+        var p = Process.Start(new ProcessStartInfo("osascript", $"-e \"{cmd}\"") { UseShellExecute = true });
+        if (p == null) return false;
+        await p.WaitForExitAsync();
+        return p.ExitCode == 0;
+    }
+
+    private void RemoveFromRoot(FileSystemItem item)
+    {
+        if (RootItems.Contains(item))
+        {
+            RootItems.Remove(item);
+            return;
+        }
+
+        foreach (var root in RootItems) RemoveRecursive(root, item);
+    }
+
+    private void RemoveRecursive(FileSystemItem parent, FileSystemItem item)
     {
         if (parent.Children.Contains(item)) parent.Children.Remove(item);
-        foreach (var child in parent.Children.Where(c => c.IsDirectory))
-            RemoveItemRecursive(child, item);
+        foreach (var child in parent.Children.Where(c => c.IsDirectory)) RemoveRecursive(child, item);
     }
 
-    private void GetDriveTotalSize()
+    public void Search(string fileName)
     {
-        foreach (var drive in DriveInfo.GetDrives())
-        {
-            try { if (drive.IsReady) Drives.Add(drive); } catch { }
-        }
+        var win = new SearchResults(fileName);
+        win.Show();
     }
 
-    private async void Search(string fileName)
+    // ===================== Helpers =====================
+    private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
-        var window = new SearchResults(fileName);
-        window.Show();
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-    private void OnPropertyChanged([CallerMemberName] string? name = null) =>
+        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+        field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        return true;
+    }
 }

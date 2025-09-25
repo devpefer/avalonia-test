@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using AvaloniaTest2.Models;
@@ -21,8 +22,8 @@ public partial class FileExplorer : UserControl
             }
         };
     }
-    
-    private void TreeViewItem_Expanded(object? sender, RoutedEventArgs e)
+
+    private async Task TreeViewItem_Expanded(object? sender, RoutedEventArgs e)
     {
         if (e.Source is TreeViewItem item && item.DataContext is FileSystemItem fsi)
         {
@@ -32,5 +33,4 @@ public partial class FileExplorer : UserControl
             }
         }
     }
-    
 }
