@@ -1,0 +1,70 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vcxproj.user
+*.vs/
+
+# MonoDevelop
+*.pidb
+*.userprefs
+
+# Visual Studio Code
+.vscode/
+
+# Rider IDE
+.idea/
+*.sln.iml
+
+# NuGet packages
+*.nupkg
+packages/
+.nuget/
+
+# MSBuild
+*.builds
+*.log
+*.tlog/
+*.vspscc
+*_i.c
+*_p.c
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.ipch
+*.pdb
+*.idb
+*.class
+*.exe
+*.dll
+*.cache
+*.manifest
+*.resources
+*.sbr
+*.tlh
+*.tli
+
+# Dotnet Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.dotCover
+
+# ASP.NET
+*.publish.xml
+*.deploy.cmd
+*.deploy-readme.txt
+*.azurePubxml
+
+# Rider caches
+.idea/
+*.iml
