@@ -1,25 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/AvaloniaTest2.csproj": {}
+    "C:\\Users\\devpefer\\Proyectos\\avalonia-test\\AvaloniaTest2\\AvaloniaTest2.csproj": {}
   },
   "projects": {
-    "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/AvaloniaTest2.csproj": {
+    "C:\\Users\\devpefer\\Proyectos\\avalonia-test\\AvaloniaTest2\\AvaloniaTest2.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/AvaloniaTest2.csproj",
+        "projectUniqueName": "C:\\Users\\devpefer\\Proyectos\\avalonia-test\\AvaloniaTest2\\AvaloniaTest2.csproj",
         "projectName": "AvaloniaTest2",
-        "projectPath": "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/AvaloniaTest2.csproj",
-        "packagesPath": "/home/devpefer/.nuget/packages/",
-        "outputPath": "/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/obj/",
+        "projectPath": "C:\\Users\\devpefer\\Proyectos\\avalonia-test\\AvaloniaTest2\\AvaloniaTest2.csproj",
+        "packagesPath": "C:\\Users\\devpefer\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\devpefer\\Proyectos\\avalonia-test\\AvaloniaTest2\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/home/devpefer/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\devpefer\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -53,6 +59,8 @@
               "version": "[11.3.6, )"
             },
             "Avalonia.Diagnostics": {
+              "include": "None",
+              "suppressParent": "All",
               "target": "Package",
               "version": "[11.3.6, )"
             },
@@ -91,6 +99,12 @@
             "Microsoft.Data.SqlClient": {
               "target": "Package",
               "version": "[6.1.1, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.8, )",
+              "autoReferenced": true
             }
           },
           "imports": [
@@ -104,12 +118,31 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[9.0.8, 9.0.8]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[9.0.8, 9.0.8]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[9.0.8, 9.0.8]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/home/devpefer/.dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
         }
       }
     }

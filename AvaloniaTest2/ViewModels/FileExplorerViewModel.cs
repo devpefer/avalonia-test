@@ -134,6 +134,8 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         });
     }
 
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(Environment.ProcessorCount);
+
     private async Task LoadRecursiveAsync(FileSystemItem parent)
     {
         IEnumerable<string> entries;
@@ -145,6 +147,8 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         {
             return;
         }
+
+        var tasks = new List<Task>();
 
         foreach (var entry in entries)
         {
@@ -167,7 +171,20 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                     { Name = Path.GetFileName(entry), FullPath = entry, IsDirectory = true, Parent = parent };
                 await Dispatcher.UIThread.InvokeAsync(() => parent.Children.Add(childDir));
 
-                await LoadRecursiveAsync(childDir);
+                // Solo lanza tareas paralelas en el primer nivel, el resto secuencial
+                var task = Task.Run(async () =>
+                {
+                    await _semaphore.WaitAsync();
+                    try
+                    {
+                        await LoadRecursiveInternalAsync(childDir);
+                    }
+                    finally
+                    {
+                        _semaphore.Release();
+                    }
+                });
+                tasks.Add(task);
             }
             else
             {
@@ -181,8 +198,72 @@ public class FileExplorerViewModel : INotifyPropertyChanged
                     continue;
                 }
 
-                if ((fi.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) !=
-                    0) continue;
+                if ((fi.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) != 0)
+                    continue;
+
+                var fileItem = new FileSystemItem
+                {
+                    Name = fi.Name,
+                    FullPath = fi.FullName,
+                    IsDirectory = false,
+                    LogicalSize = fi.Length,
+                    Parent = parent
+                };
+                await Dispatcher.UIThread.InvokeAsync(() => parent.Children.Add(fileItem));
+            }
+        }
+
+        await Task.WhenAll(tasks);
+    }
+
+    // Recursividad interna secuencial para evitar deadlocks
+    private async Task LoadRecursiveInternalAsync(FileSystemItem parent)
+    {
+        IEnumerable<string> entries;
+        try
+        {
+            entries = Directory.EnumerateFileSystemEntries(parent.FullPath);
+        }
+        catch
+        {
+            return;
+        }
+
+        foreach (var entry in entries)
+        {
+            bool isDir = false;
+            try
+            {
+                isDir = Directory.Exists(entry);
+            }
+            catch
+            {
+                continue;
+            }
+
+            if (isDir)
+            {
+                if (_blockedPaths.Any(bp => entry.StartsWith(bp, StringComparison.OrdinalIgnoreCase))) continue;
+
+                var childDir = new FileSystemItem
+                    { Name = Path.GetFileName(entry), FullPath = entry, IsDirectory = true, Parent = parent };
+                await Dispatcher.UIThread.InvokeAsync(() => parent.Children.Add(childDir));
+                await LoadRecursiveInternalAsync(childDir);
+            }
+            else
+            {
+                FileInfo fi;
+                try
+                {
+                    fi = new FileInfo(entry);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                if ((fi.Attributes & (FileAttributes.ReparsePoint | FileAttributes.Device | FileAttributes.System)) != 0)
+                    continue;
 
                 var fileItem = new FileSystemItem
                 {
@@ -197,22 +278,52 @@ public class FileExplorerViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>
-    /// Calcula el tamaño de un directorio de forma bottom-up: espera a que todos los hijos calculen antes de sumar.
-    /// </summary>
     private async Task<long> CalculateDirectorySizeBottomUpAsync(FileSystemItem dirItem)
+    {
+        var dirTasks = new List<Task<long>>();
+
+        foreach (var childDir in dirItem.Children.Where(c => c.IsDirectory))
+        {
+            var task = Task.Run(async () =>
+            {
+                await _semaphore.WaitAsync();
+                try
+                {
+                    return await CalculateDirectorySizeBottomUpInternalAsync(childDir);
+                }
+                finally
+                {
+                    _semaphore.Release();
+                }
+            });
+            dirTasks.Add(task);
+        }
+
+        var dirSizes = await Task.WhenAll(dirTasks);
+
+        long total = dirSizes.Sum();
+        total += dirItem.Children.Where(c => !c.IsDirectory).Sum(f => f.LogicalSize);
+
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            dirItem.LogicalSize = total;
+            SortRecursive(dirItem, SelectedSort);
+        });
+
+        return total;
+    }
+
+    // Recursividad interna secuencial para evitar deadlocks
+    private async Task<long> CalculateDirectorySizeBottomUpInternalAsync(FileSystemItem dirItem)
     {
         long total = 0;
 
         foreach (var childDir in dirItem.Children.Where(c => c.IsDirectory))
         {
-            total += await CalculateDirectorySizeBottomUpAsync(childDir);
+            total += await CalculateDirectorySizeBottomUpInternalAsync(childDir);
         }
 
-        foreach (var file in dirItem.Children.Where(c => !c.IsDirectory))
-        {
-            total += file.LogicalSize;
-        }
+        total += dirItem.Children.Where(c => !c.IsDirectory).Sum(f => f.LogicalSize);
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {

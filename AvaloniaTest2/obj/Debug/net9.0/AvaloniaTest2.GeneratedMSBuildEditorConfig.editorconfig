@@ -1,4 +1,8 @@
 is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = 
+build_property.IncludeAllContentForSelfExtract = 
 build_property.AvaloniaNameGeneratorIsEnabled = true
 build_property.AvaloniaNameGeneratorBehavior = InitializeComponent
 build_property.AvaloniaNameGeneratorDefaultFieldModifier = internal
@@ -15,35 +19,35 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = AvaloniaTest2
-build_property.ProjectDir = /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/
+build_property.ProjectDir = C:\Users\devpefer\Proyectos\avalonia-test\AvaloniaTest2\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
 
-[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/App.axaml]
+[C:/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/AddServer.axaml]
+[C:/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/Views/AddServer.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/AppNotification.axaml]
+[C:/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/Views/AppNotification.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/FileExplorer.axaml]
+[C:/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/Views/FileExplorer.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/FloatingPanel.axaml]
+[C:/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/Views/FloatingPanel.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/MainWindow.axaml]
+[C:/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/Views/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/SearchResults.axaml]
+[C:/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/Views/SearchResults.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/Servers.axaml]
+[C:/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/Views/Servers.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/Views/ServiceBroker.axaml]
+[C:/Users/devpefer/Proyectos/avalonia-test/AvaloniaTest2/Views/ServiceBroker.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
