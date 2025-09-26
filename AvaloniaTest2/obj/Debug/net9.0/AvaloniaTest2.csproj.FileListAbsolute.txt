@@ -80,11 +80,6 @@
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Material.Ripple.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Material.Styles.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Assets/appicon.png
-/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Microsoft.Win32.SystemEvents.dll
-/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/System.Drawing.Common.dll
-/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/System.Windows.Forms.dll
-/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/runtimes/win/lib/net7.0/Microsoft.Win32.SystemEvents.dll
-/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/runtimes/win/lib/net7.0/System.Drawing.Common.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/CommunityToolkit.WinUI.Notifications.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Avalonia.Xaml.Interactions.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Avalonia.Xaml.Interactivity.dll
