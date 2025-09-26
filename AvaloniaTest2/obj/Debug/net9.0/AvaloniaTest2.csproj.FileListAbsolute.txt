@@ -79,7 +79,6 @@
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Material.Colors.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Material.Ripple.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Material.Styles.dll
-/home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Assets/appicon.png
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/CommunityToolkit.WinUI.Notifications.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Avalonia.Xaml.Interactions.dll
 /home/devpefer/Proyectos/AvaloniaTest2/AvaloniaTest2/bin/Debug/net9.0/Avalonia.Xaml.Interactivity.dll
