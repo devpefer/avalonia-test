@@ -64,6 +64,10 @@
               "target": "Package",
               "version": "[11.3.6, )"
             },
+            "Avalonia.Themes.Simple": {
+              "target": "Package",
+              "version": "[11.3.6, )"
+            },
             "Avalonia.Xaml.Interactions": {
               "target": "Package",
               "version": "[11.3.0.6, )"
