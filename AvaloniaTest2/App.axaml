@@ -15,6 +15,10 @@
         <DataTemplate DataType="viewModels:ServersViewModel">
             <views:Servers/>
         </DataTemplate>
+        
+        <DataTemplate DataType="viewModels:ServiceBrokerViewModel">
+            <views:ServiceBroker/>
+        </DataTemplate>
     </Application.DataTemplates>
 
     <Application.Styles>

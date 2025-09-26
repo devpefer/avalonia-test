@@ -23,6 +23,10 @@
 /home/devpefer/.nuget/packages/avalonia.win32/11.3.6/lib/net8.0/Avalonia.Win32.Automation.dll
 /home/devpefer/.nuget/packages/avalonia.win32/11.3.6/lib/net8.0/Avalonia.Win32.dll
 /home/devpefer/.nuget/packages/avalonia.x11/11.3.6/lib/net8.0/Avalonia.X11.dll
+/home/devpefer/.nuget/packages/avalonia.xaml.interactions/11.3.0.6/lib/net8.0/Avalonia.Xaml.Interactions.dll
+/home/devpefer/.nuget/packages/avalonia.xaml.interactivity/11.3.0.6/lib/net8.0/Avalonia.Xaml.Interactivity.dll
+/home/devpefer/.nuget/packages/azure.core/1.47.1/lib/net8.0/Azure.Core.dll
+/home/devpefer/.nuget/packages/azure.identity/1.14.2/lib/net8.0/Azure.Identity.dll
 /home/devpefer/.nuget/packages/communitytoolkit.mvvm/8.2.1/lib/net6.0/CommunityToolkit.Mvvm.dll
 /home/devpefer/.nuget/packages/communitytoolkit.winui.notifications/7.1.2/lib/net5.0/CommunityToolkit.WinUI.Notifications.dll
 /home/devpefer/.nuget/packages/fluentavaloniaui/2.4.0/lib/net6.0/FluentAvalonia.dll
@@ -32,7 +36,21 @@
 /home/devpefer/.nuget/packages/material.avalonia/3.13.1/lib/net8.0/Material.Ripple.dll
 /home/devpefer/.nuget/packages/material.avalonia/3.13.1/lib/net8.0/Material.Styles.dll
 /home/devpefer/.nuget/packages/microcom.runtime/0.11.0/lib/net5.0/MicroCom.Runtime.dll
+/home/devpefer/.nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll
+/home/devpefer/.nuget/packages/microsoft.bcl.cryptography/9.0.4/lib/net9.0/Microsoft.Bcl.Cryptography.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.CSharp.dll
+/home/devpefer/.nuget/packages/microsoft.data.sqlclient/6.1.1/ref/net9.0/Microsoft.Data.SqlClient.dll
+/home/devpefer/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/9.0.4/lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/home/devpefer/.nuget/packages/microsoft.extensions.logging.abstractions/9.0.4/lib/net9.0/Microsoft.Extensions.Logging.Abstractions.dll
+/home/devpefer/.nuget/packages/microsoft.identity.client/4.73.1/lib/net8.0/Microsoft.Identity.Client.dll
+/home/devpefer/.nuget/packages/microsoft.identity.client.extensions.msal/4.73.1/lib/net8.0/Microsoft.Identity.Client.Extensions.Msal.dll
+/home/devpefer/.nuget/packages/microsoft.identitymodel.abstractions/7.7.1/lib/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/home/devpefer/.nuget/packages/microsoft.identitymodel.jsonwebtokens/7.7.1/lib/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/devpefer/.nuget/packages/microsoft.identitymodel.logging/7.7.1/lib/net8.0/Microsoft.IdentityModel.Logging.dll
+/home/devpefer/.nuget/packages/microsoft.identitymodel.protocols/7.7.1/lib/net8.0/Microsoft.IdentityModel.Protocols.dll
+/home/devpefer/.nuget/packages/microsoft.identitymodel.protocols.openidconnect/7.7.1/lib/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/devpefer/.nuget/packages/microsoft.identitymodel.tokens/7.7.1/lib/net8.0/Microsoft.IdentityModel.Tokens.dll
+/home/devpefer/.nuget/packages/microsoft.sqlserver.server/1.0.0/lib/netstandard2.0/Microsoft.SqlServer.Server.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.VisualBasic.Core.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.VisualBasic.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/Microsoft.Win32.Primitives.dll
@@ -43,6 +61,7 @@
 /home/devpefer/.nuget/packages/skiasharp/2.88.9/lib/net6.0/SkiaSharp.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.AppContext.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Buffers.dll
+/home/devpefer/.nuget/packages/system.clientmodel/1.5.1/lib/net8.0/System.ClientModel.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Collections.Concurrent.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Collections.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Collections.Immutable.dll
@@ -80,6 +99,7 @@
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Globalization.Calendars.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Globalization.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Globalization.Extensions.dll
+/home/devpefer/.nuget/packages/system.identitymodel.tokens.jwt/7.7.1/lib/net8.0/System.IdentityModel.Tokens.Jwt.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.IO.Compression.Brotli.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.IO.Compression.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.IO.Compression.FileSystem.dll
@@ -100,6 +120,7 @@
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Linq.Expressions.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Linq.Parallel.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Linq.Queryable.dll
+/home/devpefer/.nuget/packages/system.memory.data/8.0.1/lib/net8.0/System.Memory.Data.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Memory.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Net.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Net.Http.dll
@@ -159,7 +180,9 @@
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Security.Cryptography.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Security.Cryptography.Encoding.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Security.Cryptography.OpenSsl.dll
+/home/devpefer/.nuget/packages/system.security.cryptography.pkcs/9.0.4/lib/net9.0/System.Security.Cryptography.Pkcs.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Security.Cryptography.Primitives.dll
+/home/devpefer/.nuget/packages/system.security.cryptography.protecteddata/9.0.4/lib/net9.0/System.Security.Cryptography.ProtectedData.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Security.Cryptography.X509Certificates.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Security.dll
 /home/devpefer/.dotnet/packs/Microsoft.NETCore.App.Ref/9.0.9/ref/net9.0/System.Security.Principal.dll

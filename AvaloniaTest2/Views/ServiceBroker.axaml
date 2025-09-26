@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:AvaloniaTest2.ViewModels"
+             x:Class="AvaloniaTest2.Views.ServiceBroker"
+             x:DataType="viewModels:ServiceBrokerViewModel"
+             Width="600" Height="400"
+             Background="Black">
+
+    <Grid RowDefinitions="Auto,*" Margin="10">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <Button Content="Refrescar" Command="{Binding RefreshCommand}" Width="100"/>
+            <TextBlock Text="{Binding Status}" Foreground="White" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <ListBox Grid.Row="1"
+                 ItemsSource="{Binding Messages}"
+                 Background="Black"
+                 Foreground="White"
+                 FontFamily="Consolas, 'Courier New', monospace"
+                 FontSize="14"/>
+    </Grid>
+</UserControl>

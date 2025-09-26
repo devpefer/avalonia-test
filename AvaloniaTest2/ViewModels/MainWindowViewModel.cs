@@ -10,11 +10,13 @@ public class MainWindowViewModel : INotifyPropertyChanged
 {
     public FileExplorerViewModel FileExplorerVm { get; }
     public ServersViewModel ServersVm { get; }
+    public ServiceBrokerViewModel ServiceBrokerVm { get; }
 
     public ObservableCollection<string> MenuItems { get; } = new()
     {
         "Explorador de Archivos",
-        "Servidores"
+        "Servidores",
+        "Service Broker"
     };
 
     private string _selectedMenuItem = "Explorador de Archivos";
@@ -61,6 +63,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
             new InAppNotifier()
         );
         ServersVm = new ServersViewModel();
+        ServiceBrokerVm = new ServiceBrokerViewModel();
         UpdateSelectedView();
     }
 
@@ -70,6 +73,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
         {
             "Explorador de Archivos" => FileExplorerVm,
             "Servidores" => ServersVm,
+            "Service Broker" => ServiceBrokerVm,
             _ => null
         };
     }

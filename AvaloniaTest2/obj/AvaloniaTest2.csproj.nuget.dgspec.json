@@ -64,6 +64,10 @@
               "target": "Package",
               "version": "[11.3.6, )"
             },
+            "Avalonia.Xaml.Interactions": {
+              "target": "Package",
+              "version": "[11.3.0.6, )"
+            },
             "CommunityToolkit.Mvvm": {
               "target": "Package",
               "version": "[8.2.1, )"
@@ -79,6 +83,10 @@
             "Material.Avalonia": {
               "target": "Package",
               "version": "[3.13.1, )"
+            },
+            "Microsoft.Data.SqlClient": {
+              "target": "Package",
+              "version": "[6.1.1, )"
             },
             "System.Drawing.Common": {
               "target": "Package",
